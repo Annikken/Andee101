@@ -472,6 +472,9 @@ const char ANALOG_DIAL_OUT = 155;
 const char SLIDER_IN = 156;
 const char SMS = 160;
 const char VIBRATE = 161;
+const char DATA_OUT_CIRCLE = 162;
+const char DATA_OUT_HEADER = 163;
+const char CIRCLE_BUTTON = 164;
 
 
 ///////////////////Button Type Macros//////////////////////
@@ -480,23 +483,30 @@ const char VIBRATE = 161;
 #define NOACK NO_ACK
 #define NO_ACK '1'
 
+/*
 #define ROUNDRECTNOBG ROUND_RECT_NO_BG
 #define ROUNDRECTBG ROUND_RECT_BG
 #define RECTNOBG RECT_NO_BG
 #define RECTBG RECT_BG
 #define CIRCLENOBG CIRCLE_NO_BG
 #define CIRCLEBG CIRCLE_BG
+*/
 
 #define ALIGN_CENTER '0'
 #define ALIGN_LEFT '1'
 #define HEADER '2'
 
+#define ROUND_RECT '0'
+#define CIRCLE '1'
+
+/*
 #define ROUND_RECT_NO_BG '0'
 #define ROUND_RECT_BG	'1'
 #define RECT_NO_BG	'2'
 #define RECT_BG	'3'
 #define CIRCLE_NO_BG	'4'
 #define CIRCLE_BG	'5'
+*/
 
 ///////////Keyboard Definitions////////////////
 

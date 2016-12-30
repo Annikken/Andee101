@@ -800,56 +800,74 @@ void Andee101Helper::setType(char type)
 {
 	if(type == DATA_OUT)
 	{
-		sprintf(bleBuffer , "%c%c%c", (ASTART), (DATA_OUT), (id));
+		sprintf(bleBuffer , "%c%c", (ASTART), (DATA_OUT));
+		subBuffer = '0';
+	}
+	else if(type == DATA_OUT_CIRCLE)
+	{		
+		sprintf(bleBuffer, "%c%c",ASTART,DATA_OUT);
+		subBuffer = '1';
+	}
+	else if(type == DATA_OUT_HEADER)
+	{		
+		sprintf(bleBuffer, "%c%c",ASTART,DATA_OUT);
+		subBuffer = '2';
 	}
 	
 	else if(type == BUTTON_IN)
 	{		
-		sprintf(bleBuffer, "%c%c%c",ASTART,BUTTON_IN, id);
+		sprintf(bleBuffer, "%c%c",ASTART,BUTTON_IN);
+		subBuffer = '0';
+	}
+	else if(type == CIRCLE_BUTTON)
+	{		
+		sprintf(bleBuffer, "%c%c",ASTART,BUTTON_IN);
+		subBuffer = '1';
 	}
 	
 	else if(type == ANALOG_DIAL_OUT)
 	{
-		sprintf(bleBuffer,"%c%c%c", ASTART, ANALOG_DIAL_OUT, id);
+		sprintf(bleBuffer,"%c%c", ASTART, ANALOG_DIAL_OUT);
 	}
 	
 	else if(type == KEYBOARD_IN)
 	{		
-		sprintf(bleBuffer, "%c%c%c", ASTART, KEYBOARD_IN, id);
+		sprintf(bleBuffer, "%c%c", ASTART, KEYBOARD_IN);
 	}
 	
 	else if(type == DATE_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c", ASTART, DATE_IN, id);
+		sprintf(bleBuffer, "%c%c", ASTART, DATE_IN);
 	}
 	
 	else if(type == TIME_IN)
 	{
-		sprintf(bleBuffer,"%c%c%c", ASTART, TIME_IN, id);
+		sprintf(bleBuffer,"%c%c", ASTART, TIME_IN);
 	}
 	
 	else if(type == SLIDER_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c", ASTART,SLIDER_IN, id);
+		sprintf(bleBuffer, "%c%c", ASTART,SLIDER_IN);
 	}	
 	
 	else if (type == TTS)
 	{
-		sprintf(bleBuffer, "%c%c%c", ASTART, TTS, id);
+		sprintf(bleBuffer, "%c%c", ASTART, TTS);
 	}		
 	
 	else if (type == JOYSTICK)
 	{
-		sprintf(bleBuffer,"%c%c%c", ASTART,JOYSTICK,id);
+		sprintf(bleBuffer,"%c%c", ASTART,JOYSTICK);
 	}
 	
 	else if (type == WATCH)
 	{
-		sprintf(bleBuffer,"%c%c%c", ASTART,WATCH,id);
+		sprintf(bleBuffer,"%c%c", ASTART,WATCH);
 	}
 
 	else
 	{
+		
 	}
 }
 void Andee101Helper::setCoord(float x, float y, float w, float h)
@@ -1404,12 +1422,12 @@ void Andee101Helper::update(void)
 	
 	if(bleBuffer[1] == DATA_OUT)	
 	{
-		sprintf(bleBuffer , "%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c", (ASTART),(DATA_OUT),subBuffer,(id), xywhBuffer,(inputBuffer),P_SEP,titleFontBuffer,titleBGBuffer,bodyFontBuffer,bodyBGBuffer,P_SEP,	titleBuffer,P_SEP,unitBuffer,P_SEP,dataBuffer,(AEND));
+		sprintf(bleBuffer , "%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c", (ASTART),(DATA_OUT),subBuffer,(id), xywhBuffer,(inputBuffer),P_SEP,titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer,P_SEP,	titleBuffer,P_SEP,unitBuffer,P_SEP,dataBuffer,(AEND));
 	}
 	
 	else if(bleBuffer[1] == BUTTON_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%c%s%c",ASTART,BUTTON_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,bodyBGBuffer,P_SEP,titleBuffer,AEND);
+		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%c%s%c",ASTART,BUTTON_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,bodyBGBuffer,bodyFontBuffer,P_SEP,titleBuffer,AEND);
 	}
 	
 	else if(bleBuffer[1] == ANALOG_DIAL_OUT)
@@ -1422,7 +1440,7 @@ void Andee101Helper::update(void)
 		{
 			sprintf(minBuffer,"%c",'0');
 		}
-		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c%s%c%s%c", ASTART, ANALOG_DIAL_OUT,subBuffer, id, xywhBuffer,inputBuffer, P_SEP, titleFontBuffer,titleBGBuffer,bodyFontBuffer,bodyBGBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer,P_SEP, dataBuffer, P_SEP, maxBuffer, P_SEP, minBuffer, AEND);
+		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c%s%c%s%c", ASTART, ANALOG_DIAL_OUT,subBuffer, id, xywhBuffer,inputBuffer, P_SEP, titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer,P_SEP, dataBuffer, P_SEP, maxBuffer, P_SEP, minBuffer, AEND);
 	}	
 	
 	else if(bleBuffer[1] == KEYBOARD_IN)
@@ -1442,7 +1460,7 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == SLIDER_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", ASTART,SLIDER_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,titleFontBuffer,titleBGBuffer,bodyFontBuffer,bodyBGBuffer,P_SEP,titleBuffer,P_SEP,dataBuffer,P_SEP,maxBuffer,P_SEP,minBuffer,P_SEP,unitBuffer,P_SEP,flashBuffer,AEND);
+		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", ASTART,SLIDER_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer,P_SEP,titleBuffer,P_SEP,dataBuffer,P_SEP,maxBuffer,P_SEP,minBuffer,P_SEP,unitBuffer,P_SEP,flashBuffer,AEND);
 	}	
 	
 	else if(bleBuffer[1] == TTS)
@@ -1452,17 +1470,14 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == JOYSTICK)
 	{
-		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%s%c%s%c", ASTART,JOYSTICK,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,	titleFontBuffer,titleBGBuffer,bodyBGBuffer,P_SEP,titleBuffer,AEND);
+		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%s%c%s%c", ASTART,JOYSTICK,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,	titleBGBuffer,titleFontBuffer,bodyBGBuffer,P_SEP,titleBuffer,AEND);
 	}
 	
 	else if(bleBuffer[1] == WATCH)
 	{
-		sprintf(bleBuffer,"%c%c%c%c%c%s%s%c%s%c", ASTART,WATCH,P_SEP,watchBuffer,P_SEP,titleFontBuffer,titleBGBuffer,P_SEP,titleBuffer,AEND);
+		sprintf(bleBuffer,"%c%c%c%c%c%s%s%c%s%c", ASTART,WATCH,P_SEP,watchBuffer,P_SEP,titleBGBuffer,titleFontBuffer,P_SEP,titleBuffer,AEND);
 	}
-		
-	 
-	
-	
+	printHEX(bleBuffer);
 	sendToPhone(bleBuffer);
 	delay(2);
 	
