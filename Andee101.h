@@ -260,7 +260,13 @@ extern Andee101Class Andee101;
 	//This function sets the id for the widget. Also initialises some parts of the widget to a default layout
 	
 	void setType(char);
-	//This function sets the type of widget. The available types for the Andee101 will be DATA_OUT, BUTTON_IN, ANALOG_DIAL_OUT, KEYBOARD_IN, DATE_IN, TIME_IN, SLIDER_IN, TEXTBOX, TTS, JOYSTICK
+	/*
+	This function sets the type of widget. The available types for the Andee101 will be DATA_OUT, DATA_OUT_CIRCLE, DATA_OUT_HEADER, 
+	BUTTON_IN, CIRCLE_BUTTON,
+	ANALOG_DIAL_OUT, 
+	KEYBOARD_IN, DATE_IN, TIME_IN, 
+	SLIDER_IN, TEXTBOX, TTS, JOYSTICK	
+	*/
 	
 	void setCoord(float, float, float, float);//(x,y,w,h) respectively
 	//This function sets the position and size of the widget. x and y are the x coordinates and y corrdinates respectively. w and h is the width and height of the widget respectively. 
@@ -281,18 +287,8 @@ extern Andee101Class Andee101;
 	*/
 		
 	void setSubType(char);
-	//This function is to set the subtype of a widget. Buttons have 6 different subtypes to choose from, giving more customisability to the dashboard.
-	/* Buttons: ROUND_RECT_NO_BG for a rounded rectangle with transparent background button
-				ROUND_RECT_BG for a rounded rectangle with a filled background button
-				RECT_NO_BG for a rectangle with transparent background button
-				RECT_BG for a rectangle with a filled background button
-				CIRCLE_NO_BG for a circle with transparent background button
-				CIRCLE_BG for a circle with a filled background button 
-				
-		Display Boxes have 3 different subtypes to choose from. The different subtypes enable different alignments and a "header" widget
-		Display Boxes: ALIGN_CENTER
-					   ALIGN_LEFT
-					   HEADER                                                              */
+	//*****DEPRECATED. THIS FUNCTION WILL BE USED INTERNALLY. USERS NO LONGER NEED TO DEFINE ARGUMENT OF THIS FUNCTION.****//
+	
 	
 	void setColor(const char*);
 	void setColor(const char);
@@ -515,20 +511,10 @@ const char CIRCLE_BUTTON = 164;
 #define NUMERIC '2'
 #define NUMERIC_PW '3'
 
-
-//////////////////////////DialOut Macros////////////////////////////
-
-#define setAnalogMainColor setColor
-#define setAnalogSecColor setTitleColor
-#define setAnalogTextColor setTitleTextColor
-#define setAnalogValueColor setTextColor
-
 /////////////////////Slider Macros//////////////////////
 
-#define setSliderTitleColor setTitleTextColor
-#define setSliderBarColor setTitleColor
-#define setSliderColor setColor
-#define setSliderFontColor setTextColor
+#define setActiveColor setTitleColor///Used for AnalogDial as well
+#define setBaseColor setColor///Used for AnalogDial as well
 
 #define setSliderMinMax setMinMax
 #define setSliderReportMode setInputMode

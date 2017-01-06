@@ -3,11 +3,14 @@
   ================
   Lesson 05
   Creating Your Time Input Button
-  by Robin Ha <robin@annikken.com>
-
+  
   Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee 101!
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/ 
 
 
@@ -15,8 +18,6 @@
 // to work with the Arduino!
 #include <CurieBLE.h>
 #include <Andee101.h>
-#include <Servo.h>
-
 
 // Every object that appears on your smartphone's screen
 // needs to be declared like this:
@@ -66,7 +67,7 @@ void setInitialData()
   objectB.setType(TIME_IN);  // This defines your object as a Time Input Button
   objectB.setCoord(35, 50, 30, 20);
   objectB.setTitle("Enter the Time");
-  objectB.setColor("FFFF8000");
+  objectB.setColor(RED);
 
 }
 

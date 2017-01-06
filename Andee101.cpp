@@ -2,15 +2,13 @@
 // Annikken Pte Ltd
 // Copyright (c) 2016 Annikken Pte Ltd.  All right reserved.
 // Author: Muhammad Hasif
-// Version: 1.1
-// Dated: 22 Nov 16
 
 #include <CurieBle.h>
 #include <Andee101.h>
 #include <TimeLib.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','1','0','0'};
+char Andee101Version[5] = {'1','.','2','0','0'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -1440,7 +1438,7 @@ void Andee101Helper::update(void)
 		{
 			sprintf(minBuffer,"%c",'0');
 		}
-		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c%s%c%s%c", ASTART, ANALOG_DIAL_OUT,subBuffer, id, xywhBuffer,inputBuffer, P_SEP, titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer,P_SEP, dataBuffer, P_SEP, maxBuffer, P_SEP, minBuffer, AEND);
+		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c", ASTART, ANALOG_DIAL_OUT,subBuffer, id, xywhBuffer,inputBuffer, P_SEP, titleBGBuffer,bodyBGBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer,P_SEP, dataBuffer, P_SEP, maxBuffer, P_SEP, minBuffer, AEND);
 	}	
 	
 	else if(bleBuffer[1] == KEYBOARD_IN)
@@ -1460,7 +1458,7 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == SLIDER_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", ASTART,SLIDER_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer,P_SEP,titleBuffer,P_SEP,dataBuffer,P_SEP,maxBuffer,P_SEP,minBuffer,P_SEP,unitBuffer,P_SEP,flashBuffer,AEND);
+		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", ASTART,SLIDER_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,titleBGBuffer,bodyBGBuffer,P_SEP,titleBuffer,P_SEP,dataBuffer,P_SEP,maxBuffer,P_SEP,minBuffer,P_SEP,unitBuffer,P_SEP,flashBuffer,AEND);
 	}	
 	
 	else if(bleBuffer[1] == TTS)

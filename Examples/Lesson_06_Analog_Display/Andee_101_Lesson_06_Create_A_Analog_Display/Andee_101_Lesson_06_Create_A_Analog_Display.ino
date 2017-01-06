@@ -3,11 +3,14 @@
   ================
   Lesson 06
   Creating A Analog Display
-  by Robin Ha <robin@annikken.com>
-
+  
   Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee 101!
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/ 
 
 // Always include these libraries. Annikken Andee needs them
@@ -54,12 +57,9 @@ void setInitialData()
   objectA.setTitle("Analog Dial");
   objectA.setData(text);
   objectA.setUnit("Units");
-  objectA.setTitleTextColor("FF000000");
-  objectA.setTitleColor("50FFFFFF");
-  objectA.setTextColor("FF000000");
-  objectA.setColor("FFFF8000");
+  objectA.setActiveColor(PURPLE);//Set the Active Circle and Font Color
+  objectA.setBaseColor(BLUE);//Set the Base Circle Colour
   objectA.setMinMax(0, 100);
-
 }
 
 // Arduino will run instructions here repeatedly until you power it off.

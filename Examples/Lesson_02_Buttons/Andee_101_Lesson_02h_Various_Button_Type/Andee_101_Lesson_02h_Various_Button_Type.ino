@@ -3,11 +3,14 @@
   ================
   Lesson 02h
   Displaying the various Button Subtypes
-  by Hasif <hasif@annikken.com>
-
+  
   Check out our Resources section for more information and 
   ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/
 // Always include these libraries. Annikken Andee101 needs them
 // to work with the Arduino!
@@ -19,8 +22,6 @@ Andee101Helper btn1;
 Andee101Helper btn2;
 Andee101Helper btn3;
 Andee101Helper btn4;
-Andee101Helper btn5;
-Andee101Helper btn6;
 
 bool UpdateFlag = false;
 
@@ -44,47 +45,28 @@ void setInitialData()
 
   btn1.setId(2);
   btn1.setType(BUTTON_IN);
-  btn1.setCoord(3,48,29,24);
+  btn1.setCoord(2,48,48,24);
   btn1.setTitle("Press Me!");
-  btn1.setColor(RED);
-  btn1.setSubType(ROUND_RECT_NO_BG);
+  btn1.setColor("000000FF");
 
   btn2.setId(3);
   btn2.setType(BUTTON_IN);
-  btn2.setCoord(35,48,29,24);
+  btn2.setCoord(51,48,48,24);
   btn2.setTitle("Press Me!");
-  btn2.setColor(BLUE);
-  btn2.setSubType(ROUND_RECT_BG);
+  btn2.setColor(RED);
   
   btn3.setId(4);
-  btn3.setType(BUTTON_IN);
-  btn3.setCoord(67,48,29,24);
+  btn3.setType(CIRCLE_BUTTON);
+  btn3.setCoord(3,74,48,24);
   btn3.setTitle("Press Me!");
-  btn3.setColor(GREEN);
-  btn3.setSubType(RECT_NO_BG);
+  btn3.setColor("0000FF00");
 
   btn4.setId(5);
-  btn4.setType(BUTTON_IN);
-  btn4.setCoord(3,74,29,24);
+  btn4.setType(CIRCLE_BUTTON);
+  btn4.setCoord(50,74,48,24);
   btn4.setTitle("Press Me!");
-  btn4.setColor(ORANGE);
-  btn4.setSubType(RECT_BG);
-
-  btn5.setId(6);
-  btn5.setType(BUTTON_IN);
-  btn5.setCoord(35,74,29,24);
-  btn5.setTitle("Press Me!");
-  btn5.setColor(INDIGO);
-  btn5.setSubType(CIRCLE_NO_BG);
-
-  btn6.setId(7);
-  btn6.setType(BUTTON_IN);
-  btn6.setCoord(67,74,29,24);
-  btn6.setTitle("Press Me!");
-  btn6.setColor(VIOLET);
-  btn6.setSubType(CIRCLE_BG);
+  btn4.setColor(ORANGE); 
 }
-  
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -99,8 +81,6 @@ void loop() {
         btn2.update();
         btn3.update();
         btn4.update();
-        btn5.update();
-        btn6.update();
       }      
       UpdateFlag = true;
     }
@@ -124,7 +104,7 @@ void loop() {
     {
       btn3.ack();
       displayBtn.setTitle("This is a");
-      displayBtn.setData("Rect with");
+      displayBtn.setData("Circle with");
       displayBtn.setUnit("No Background Color");
       displayBtn.update();
     }
@@ -132,26 +112,10 @@ void loop() {
     {
       btn4.ack();
       displayBtn.setTitle("This is a");
-      displayBtn.setData("Rect with");
-      displayBtn.setUnit("Background Color");
-      displayBtn.update();
-    }
-    if(btn5.isPressed())
-    {
-      btn5.ack();
-      displayBtn.setTitle("This is a");
-      displayBtn.setData("Circle with");
-      displayBtn.setUnit("No Background Color");
-      displayBtn.update();
-    }
-    if(btn6.isPressed())
-    {
-      btn6.ack();
-      displayBtn.setTitle("This is a");
       displayBtn.setData("Circle with");
       displayBtn.setUnit("Background Color");
       displayBtn.update();
-    } 
+    }    
   }
   else{
     UpdateFlag = false; 

@@ -3,18 +3,20 @@
   ================
   Lesson 03a
   Creating A Text Input Button
-  by Robin Ha <robin@annikken.com>
-
-  Check out our Resources section for more information and
-  ideas on what you can do with the Annikken Andee 101!
+  
+  Check out our Resources section for more information and 
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/
 
 // Always include these libraries. Annikken Andee needs them
 // to work with the Arduino!
 #include <CurieBLE.h>
 #include <Andee101.h>
-#include <Servo.h>
 
 
 // Every object that appears on your smartphone's screen
@@ -34,8 +36,7 @@ void setup()
   Serial.begin(9600);
   Andee101.setName("Andee101"); // Max 8 characters only
   Andee101.begin();  // Setup the Arduino 101 to start broadcasting as an Annikken Andee101 peripheral 
-  setInitialData();  // Define the UI objects and customise their appearance
- 
+  setInitialData();  // Define the UI objects and customise their appearance 
 }
 
 // This is the function meant to define the types and the apperance of
@@ -45,7 +46,7 @@ void setInitialData()
   memset(text, 0x00, 32);
   objectA.setId(0);  // Each object must have a unique ID number
   objectA.setType(DATA_OUT);  // This defines your object as a display box
-  objectA.setCoord(0, 10, 100  , 20);
+  objectA.setCoord(0, 10, 100, 20);
   /* setCoord (x-coord, y-coord, width, height)
      x-coord: From 0.0 (left-most) to 100.0 (right-most)
      y-coord: From 0.0 (top-most)  to 100.0 (bottom-most)

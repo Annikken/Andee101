@@ -3,11 +3,14 @@
   ================
   Lesson 02c
   Creating a Toggle Button
-  by Hasif <hasif@annikken.com>
-
-  Check out our Resources section for more information and
-  ideas on what you can do with the Annikken Andee101!
+  
+  Check out our Resources section for more information and 
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/
 /* A toggle button is a button that changes between two states
   when pressed, e.g. On and off. */

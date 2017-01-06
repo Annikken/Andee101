@@ -3,11 +3,14 @@
   ================
   Lesson 01d
   Displaying Raw Analog Input Information
-  by Muhammad Hasif <hasif@annikken.com>
-
+  
   Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee101!
-  http://resources.annikken.com    
+  ideas on what you can do with the Annikken Andee!
+  http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee   
 ************************************************************/
 
 // Works with any analog sensor. You can use a Light Dependent Resistor(LDR) to try out

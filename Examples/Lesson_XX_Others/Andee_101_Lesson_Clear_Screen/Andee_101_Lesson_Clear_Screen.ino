@@ -4,11 +4,14 @@
   Clear Screen
 
   Use the Clear Screen command to everything on the Dashboard
-  by Robin Ha <robin@annikken.com>
-
-  Check out our Resources section for more information and
-  ideas on what you can do with the Annikken Andee 101!
+  
+  Check out our Resources section for more information and 
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/
 
 // Always include these libraries.  Andee needs them
@@ -30,8 +33,7 @@ void setup()
 }
  
 void setInitialData()
-{
- 
+{ 
   ClearButton.setId(0);
   ClearButton.setType(BUTTON_IN);
   ClearButton.setCoord(79, 79, 20, 20);
@@ -74,7 +76,6 @@ void setInitialData()
  
 void loop()
 {
-
   if (Andee101.isConnected() == true)
   {
     if (updateUI == true) {
@@ -95,9 +96,6 @@ void loop()
   else {
     updateUI = true;
   }
-
-
-
 }
 
 

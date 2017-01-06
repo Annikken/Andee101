@@ -2,11 +2,14 @@
   [ Andee - with Arduino/Genuino 101 ]
   ================ 
   Displaying Gyroscope, Linear Acceleration, Gravity and GPS Values from the Smartdevice!
-  by Muhammad Hasif <hasif@annikken.com>
-
-  Check out our Resources section for more information and
+  
+  Check out our Resources section for more information and 
   ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/
 // Always include these libraries. Andee 101 needs them
 // to work with the Arduino!

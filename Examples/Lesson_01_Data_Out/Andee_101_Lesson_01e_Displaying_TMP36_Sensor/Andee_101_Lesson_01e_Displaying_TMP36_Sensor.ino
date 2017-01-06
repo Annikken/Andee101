@@ -3,11 +3,14 @@
   ================
   Lesson 01e
   Displaying TMP36 Sensor
-  by Hasif <hasif@annikken.com>
-
+  
   Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee 101!
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/ 
 
 /* TMP36 Wiring:

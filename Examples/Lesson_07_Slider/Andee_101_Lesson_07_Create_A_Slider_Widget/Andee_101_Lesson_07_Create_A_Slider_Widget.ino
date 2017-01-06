@@ -3,11 +3,14 @@
   ================
   Lesson 07
   Creating A Slider Widget
-  by Robin Ha <robin@annikken.com>
-
+  
   Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee 101!
+  ideas on what you can do with the Annikken Andee!
   http://resources.annikken.com
+
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/ 
 
 // Always include these libraries. Annikken Andee needs them
@@ -40,7 +43,6 @@ void setInitialData()
 {
   UIText1.setId(0);
   UIText1.setType(DATA_OUT);
-  UIText1.setSubType(0);
   UIText1.setCoord(2, 2, 96  , 22);
   UIText1.setTitleTextColor("FF000000");
   UIText1.setTitleColor("50FFFFFF");
@@ -48,21 +50,19 @@ void setInitialData()
   UIText1.setData(50);
   UIText1.setUnit(" ");
 
-
   UI1.setId(1);
   UI1.setType(SLIDER_IN);
   UI1.setInputMode(ON_FINGER_UP);
   UI1.setSliderNumIntervals(0);
-  UI1.setSubType(0);
   UI1.setCoord(2, 26, 96  , 22);
-  UI1.setColor("FFFF9900");
+  UI1.setActiveColor("FFFF9900");//Setting the Active Bar and Font Color
+  UI1.setBaseColor(RED);//Set the Base Bar Color
   UI1.setTitle("Continuous Slider");
   UI1.setMinMax(0, 100);
   UI1.setSliderInitialValue(50);
 
   UIText2.setId(12);
   UIText2.setType(DATA_OUT);
-  UIText2.setSubType(0);
   UIText2.setCoord(2, 51, 96  , 22);
   UIText2.setTitleTextColor("FF000000");
   UIText2.setTitleColor("50FFFFFF");
@@ -75,9 +75,9 @@ void setInitialData()
   UI2.setType(SLIDER_IN);
   UI2.setInputMode(ON_VALUE_CHANGE);
   UI2.setSliderNumIntervals(50);
-  UI2.setSubType(0);
   UI2.setCoord(2, 76, 96  , 22);
-  UI2.setColor("FFFF9900");
+  UI2.setActiveColor(RED);//Setting the Active Bar and Font Color
+  UI2.setBaseColor(MAROON);//Set the Base Bar Color
   UI2.setTitle("Discrete Slider");
   UI2.setMinMax(0, 100);
   UI2.setSliderInitialValue(35);

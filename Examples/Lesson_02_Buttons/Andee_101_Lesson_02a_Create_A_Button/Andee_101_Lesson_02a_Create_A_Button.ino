@@ -3,21 +3,20 @@
   ================
   Lesson 02a
   Creating Your First Button
-  by Robin Ha <robin@annikken.com>
+  
+  Check out our Resources section for more information and 
+  ideas on what you can do with the Annikken Andee!
+  http://resources.annikken.com
 
-  Check out our Resources section for more information and
-  ideas on what you can do with the  Andee!
-  http://resources..com
-
-  Check out our Blog for regular updates and fun!
-  http://.com/blog
+  Contact us at andee@annikken.com if there are 
+  bugs in this sketch or if you need help with the 
+  Annikken Andee
 ************************************************************/
 
 // Always include these libraries. Annikken Andee needs them
 // to work with the Arduino!
 #include <CurieBLE.h>
 #include <Andee101.h>
-#include <Servo.h> 
 
 // Every object that appears on your smartphone's screen
 // needs to be declared like this:

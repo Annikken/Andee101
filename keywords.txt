@@ -123,6 +123,10 @@ setWatchColor	KEYWORD2
 
 setWatchTextColor	KEYWORD2
 
+setActiveColor	KEYWORD2
+
+setBaseColor	KEYWORD2
+
 
 
 
