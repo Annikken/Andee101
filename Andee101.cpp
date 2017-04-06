@@ -8,7 +8,7 @@
 #include <TimeLib.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','0','0'};
+char Andee101Version[5] = {'1','.','2','1','0'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -19,7 +19,7 @@ char sensorsBuffer[64];
 char readBuffer[128];
 char readPartBuffer[64];
 char phoneBuffer[64];
-char sliderBuffer[128];
+char sliderBuffer[20][20];
 
 
 char JoystickBufferX [4];
@@ -202,7 +202,7 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 	{
 		char value[18];
 		char iid;
-		char temp[60];		
+		unsigned int i = 0;
 		
 		iid = readBuffer[2];
 		
@@ -219,54 +219,21 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 			}				
 		}
 		
-		if(sliderBuffer[0] == 0x00)
+		for(i = 0;i<20;i++)
 		{
-			sliderBuffer[0] = '1';
-			sliderBuffer[1] = iid;
-			sliderBuffer[2] = 2 + strlen(value);
-			memcpy(sliderBuffer + 3,value,strlen(value));
-		}
-		else
-		{
-			for(unsigned int j = 1; j < strlen(readBuffer);)
+			if(sliderBuffer[i][0] == 0x00)
 			{
-				if(sliderBuffer[j] == iid)
-				{
-					if(sliderBuffer[j+(sliderBuffer[j+1])] == 0x00)
-					{
-						memcpy(sliderBuffer + j + 2,value,strlen(value));
-						sliderBuffer[strlen(sliderBuffer)+1] = '\0';
-						break;
-					}
-					else
-					{
-						memcpy(temp,sliderBuffer + j + (sliderBuffer[j+1]),strlen(sliderBuffer)-1-(sliderBuffer[j+1]));
-						
-						temp[strlen(temp)-2] = '\0';
-						sliderBuffer[j+(sliderBuffer[j+1])] = '\0';
-						memcpy(sliderBuffer + j + 2,value,strlen(value));
-						sliderBuffer[j+1] = 2 + strlen(value);
-						
-						memcpy(sliderBuffer + j + (sliderBuffer[j+1]),temp,strlen(temp));
-						sliderBuffer[strlen(sliderBuffer)+1] = '\0';
-						break;
-					}
-				}
-				else if(sliderBuffer[j] == 0x00)					
-				{
-					sliderBuffer[0] = sliderBuffer[0] + 1;
-					sliderBuffer[j] = iid;
-					sliderBuffer[j+1] = strlen(value) + 2;
-					memcpy(sliderBuffer + j + 2,value,strlen(value));
-					sliderBuffer[strlen(sliderBuffer)] = '\0';
-					break;
-				}
-				else
-				{
-					j = j + (sliderBuffer[j+1]);
-				}
-				
-			}		
+				sliderBuffer[i][0] = iid;
+				strcpy(sliderBuffer[i]+1,value);
+				break;
+			}
+			else if(sliderBuffer[i][0] == iid)
+			{
+				memset(sliderBuffer[i],0x00,20);
+				sliderBuffer[i][0] = iid;
+				strcpy(sliderBuffer[i]+1,value);
+				break;
+			}
 		}
     
 		memset(readBuffer,0x00,128);
@@ -1301,20 +1268,18 @@ void Andee101Helper::moveSliderToValue(int value)
 
 void Andee101Helper::getSliderValue(int* x)
 {	
-	char buffer[12];
-	memset(buffer,0x00,12);
-	for(unsigned int i = 1; i < strlen(sliderBuffer); )
+	char buffer[20];
+	unsigned int i = 0;
+	memset(buffer,0x00,20);
+	
+	for(i = 0; i < 20; i++)
 	{
-		if(sliderBuffer[i] == id)
+		if(sliderBuffer[i][0] == id)
 		{
-			memcpy(buffer, sliderBuffer + 2 + i, (sliderBuffer[i+1]-2));
-			break;
-		}
-		else
-		{
-			i = i + (sliderBuffer[i+1]);
+			strcpy(buffer,sliderBuffer[i] + 1);			
 		}
 	}
+	
 	if(buffer[0] == 0x00)
 	{
 		*x = atoi(tempBuffer);
@@ -1328,18 +1293,14 @@ void Andee101Helper::getSliderValue(int* x)
 
 void Andee101Helper::getSliderValue(float* f)
 {
-	char buffer[12];
-	memset(buffer,0x00,12);
-	for(unsigned int i = 1; i < strlen(sliderBuffer); )
+	char buffer[20];
+	unsigned int i = 0;
+	memset(buffer,0x00,20);
+	for(i = 0; i < 20; i++)
 	{
-		if(sliderBuffer[i] == id)
+		if(sliderBuffer[i][0] == id)
 		{
-			memcpy(buffer, sliderBuffer + 2 + i, (sliderBuffer[i+1]-2));
-			break;
-		}
-		else
-		{
-			i = i + (sliderBuffer[i+1]);
+			strcpy(buffer,sliderBuffer[i] + 1);
 		}
 	}
 	if(buffer[0] == 0x00)
@@ -1354,18 +1315,14 @@ void Andee101Helper::getSliderValue(float* f)
 
 void Andee101Helper::getSliderValue(double* d)
 {
-	char buffer[12];
-	memset(buffer,0x00,12);
-	for(unsigned int i = 1; i < strlen(sliderBuffer); )
+	char buffer[20];
+	unsigned int i = 0;
+	memset(buffer,0x00,20);
+	for(i = 0; i < 20; i++)
 	{
-		if(sliderBuffer[i] == id)
+		if(sliderBuffer[i][0] == id)
 		{
-			memcpy(buffer, sliderBuffer + 2 + i, (sliderBuffer[i+1]-2));
-			break;
-		}
-		else
-		{
-			i = i + (sliderBuffer[i+1]);
+			strcpy(buffer,sliderBuffer[i] + 1);
 		}
 	}
 	if(buffer[0] == 0x00)
