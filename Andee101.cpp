@@ -1,6 +1,5 @@
 // Andee101.cpp - Arduino 101 Library
 // Annikken Pte Ltd
-// Copyright (c) 2016 Annikken Pte Ltd.  All right reserved.
 // Author: Muhammad Hasif
 
 #include <CurieBle.h>
@@ -8,7 +7,7 @@
 #include <TimeLib.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','1','0'};
+char Andee101Version[5] = {'1','.','3','0','0'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -30,6 +29,8 @@ bool versionAndClear = false;
 bool resetBLEFlag = true;
 bool AndeeAlive = false;
 
+bool dataLog = true;
+
 BLEPeripheral Andee101Peripheral;
 BLEService Andee101Service("0BD51666-E7CB-469B-8E4D-2742F1ACC355");
 BLECharacteristic Andee101Write ("E7ADD780-B042-4876-AAE1-1A51F5353CC1", BLEWrite | BLENotify, 20);
@@ -45,22 +46,30 @@ Andee101Class Andee101;
 
 void printDEC(char* buffer)
 {
-	Serial.print("DEC:");
-	for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+	if(dataLog == true)
 	{
-		Serial.print(buffer[v] & 0xFF,DEC);Serial.print(" ");
+		Serial.print("DEC:");
+		for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+		{
+			Serial.print(buffer[v] & 0xFF,DEC);Serial.print(" ");
+		}
+		Serial.println("");
 	}
-	Serial.println("");
+	
 }
 
 void printHEX(char* buffer)
 {
-	Serial.print("HEX:");
-	for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+	if(dataLog == true)
 	{
-		Serial.print(buffer[v] & 0xFF,HEX);Serial.print(" ");
+		Serial.print("HEX:");
+		for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+		{
+			Serial.print(buffer[v] & 0xFF,HEX);Serial.print(" ");
+		}
+		Serial.println("");	
 	}
-	Serial.println("");	
+	
 }
 
 void sendToPhone( char*UI )
@@ -426,6 +435,11 @@ void Andee101Class::begin()
 void Andee101Class::broadcast()
 {
 	BLECentral central = Andee101Peripheral.central();
+}
+
+void Andee101Class::poll()
+{
+	Andee101Peripheral.poll();
 }
 
 void Andee101Class::setName(const char* name)

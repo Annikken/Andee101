@@ -1,6 +1,5 @@
 // Andee101.h - Arduino 101 Library
 // Annikken Pte Ltd
-// Copyright (c) 2016 Annikken Pte Ltd.  All right reserved.
 // Author: Muhammad Hasif
 
 //The Annikken Andee101 is an app to enable users to create their own dynamic dashboard on their smartphones and tablets without any Objective C, Swift or Java programming. All they need is the Annikken Andee101 App, an Arduino 101 and this library. All functions will be well documented. For any questions regarding the Annikken Andee101 or even the Annikken Andee, feel free to email us at andee@annikken.com.
@@ -74,6 +73,9 @@ class Andee101Class
 	
 	void broadcast(void);
 	//This is needed to start the advertisement of the BLE on the Arduino 101
+	
+	void poll(void);
+	//
 	
 	void setName(const char*);
 	//This function allows you to change the BLE name. MAX 8 characters
