@@ -35,7 +35,7 @@ void sendToPhone(char*);
 //This function transfers data from the Arduino 101 to the connected BLE device. Since the Arduino 101 can only send data in 18 byte packets, this function automatically cuts the data up into 18 byte packets and send them one after the other to the target. 
 
 
-char* shrinkColorMap(char*);
+void convertColor(const char*,char*);
 //This function take the values of HEX 00 to FF and shrinks and maps them out to DEC 32 to 232. This is done reduce the amount of bytes used up by colors. This helps speed up data transfer by reducing data sent. However accuracy is sacrificed.
 
 
@@ -107,10 +107,7 @@ class Andee101Class
 	//speed is a value from 0.0 to 2.0
 	//pitch is a value from 0.0 to 2.00
 	//speech is your string that you want to be vocalised
-	//The bytes sent are ASTART, TTS, P_SEP, speech, P_SEP, speed, P_SEP, pitch, P_SEP, accent, AEND
-	void stopTTS(void);
-	//This function stops the smartphone/tablet from speaking. Useful if user wants to stop speech instead of waiting till speech ends
-	//The bytes sent are ASTART, TTS, P_SEP, P_SEP, P_SEP, P_SEP, AEND
+	//The bytes sent are ASTART, TTS, P_SEP, speech, P_SEP, speed, P_SEP, pitch, P_SEP, accent, AEND	
 	
 	void takePhoto(char, char, char);
 	//This function uses the smartphone/tablet camera to take pictures.
@@ -226,16 +223,16 @@ extern Andee101Class Andee101;
 	char xywhBuffer[13];
 	//buffer for coordinates in a widget. This determines x and y position and size in width and height
 	
-	char titleBGBuffer[9];
+	char titleBGBuffer[5];
 	//buffer for widget title bar background color
 	
-	char titleFontBuffer[9];
+	char titleFontBuffer[5];
 	//buffer for widget title font color
 	
-	char bodyBGBuffer[9];
+	char bodyBGBuffer[5];
 	//buffer for widget background color
 	
-	char bodyFontBuffer[9];
+	char bodyFontBuffer[5];
 	//buffer for widget font color
 	
 	char minBuffer[10];
@@ -244,7 +241,7 @@ extern Andee101Class Andee101;
 	char maxBuffer[10];
 	//buffer for max value. Only used in some widgets	
 	
-	char inputBuffer;
+	char inputTypeBuffer;
 	//buffer to store input mode of widgets. Used to change between input modes that some widgets have
 	
 	char subBuffer;
@@ -270,7 +267,7 @@ extern Andee101Class Andee101;
 	SLIDER_IN, TEXTBOX, TTS, JOYSTICK	
 	*/
 	
-	void setCoord(float, float, float, float);//(x,y,w,h) respectively
+	void setCoord(unsigned int, unsigned int, unsigned int, unsigned int);//(x,y,w,h) respectively
 	//This function sets the position and size of the widget. x and y are the x coordinates and y corrdinates respectively. w and h is the width and height of the widget respectively. 
 	
 	void setInputMode(char);
@@ -293,19 +290,19 @@ extern Andee101Class Andee101;
 	
 	
 	void setColor(const char*);
-	void setColor(const char);
+	void setColor(char*);
 	//This function is to store the background color into the appropriate buffer
 	
 	void setTitleColor(const char*);
-	void setTitleColor(const char);
+	void setTitleColor(char*);
 	//This function is to store the title background color into the appropriate buffer
 	
 	void setTitleTextColor(const char*);
-	void setTitleTextColor(const char);
+	void setTitleTextColor(char*);
 	//This function is to store the title font color into the appropriate buffer
 	
 	void setTextColor(const char*);
-	void setTextColor(const char);
+	void setTextColor(char*);
 	//This function is to store the font color into the appropriate buffer
 	
 	void setData(const char*);
@@ -396,115 +393,75 @@ extern Andee101Class Andee101;
 	void remove();	
 	//This function is used to remove the widget. This is useful in situations where only 1 or more widgets needs to be changed. No arguments needed.
 	//Data sent is ASTART, 'D', P_SEP, id, AEND
-	
-	void updateData(char*);
-	//This function is used to update a specific widget attribute and immediately update it in the dashboard without waiting for update() to be called. This function sends a string. Each type will have a different data configuration. Look at the sprintf functions of each type to see what attributes are being used for a widget
-	void updateData(int);
-	//This function works in a similar way as the above function but handles an integer instead
-	void updateData(float, char);
-	//This function works in a similar way as the above function but handles a float instead
-	void updateData(double, char);
-	//This function works in a similar way as the above function but handles a double instead
 } ;
 
 ///////////////////////////////
 /////////Definitions///////////
 ///////////////////////////////
 
-#define C_HLIMIT 100
+#define C_HLIMIT 999
 #define C_LLIMIT 0
 
-/* #define P_SEP (0x1C)
+const char SET_COLOR = '0';
+const char SET_TEXT_COLOR = '1';
+const char SET_TITLE_COLOR = '2';
+const char SET_TITLE_TEXT_COLOR = '3';
 
-#define DATA_OUT 0x43//0x21//
-//#define BUTTON_IN 0x42//0x22
-const char BUTTON_IN = 128;//
-const char KEYBOARD_IN = 129;//#define KEYBOARD_IN 0x25//
+const char SEPARATOR = 166;//0xA6;
+const char START_TAG_VERSION = 123;//0x7B
+const char END_TAG_VERSION = 125;//0x7D
+const char START_TAG_COMMAND = 10;//0x0A
+const char END_TAG_COMMAND = 11;//0x0B
+const char START_TAG_UIXYWH = 4;//0x04
+const char END_TAG_UIXYWH = 5;//0x05
+const char END_TAG_REPLY = 11;//0x0B
 
-#define TTS 0x30//0x2A//
-const char DATE_IN = 131;//#define DATE_IN 0x2B//
-const char TIME_IN = 130;//#define TIME_IN 0x2E//
-//#define DATA_OUT_CIRCLE 0x47//0x31 //circle textbox
-#define ANALOG_DIAL_OUT 'R'//0x32//visual circle//
-#define SLIDER_IN 'Q'//0x33//
-#define TEXTBOX 'H'//0x34
-//#define CIRCLE_BUTTON 'J'//0x35
-#define CAMERA 0x31//
-
-const char JOYSTICK = 134;//
-const char GYRO = 135;//
-const char LAC = 136;//
-const char GRAV = 137;//
-const char GPS = 138;//
-const char DC= 253;//#define Disconnect 0xFD//
-
-#define ASTART 0x04//0x0A
-#define AEND 0x05//0x0E */
-
-const char P_SEP = 30;
-const char ASTART = 10;
-const char AEND = 15;
 
 const char DC= 149;
-const char ACKN = 131;
-const char CLEAR = 132;
-const char REMOVE = 134;
-const char TIMEEPOCH = 135;
-const char VERSION = 136;
 
-const char GYRO = 137;
-const char LAC = 138;
-const char GRAV = 139;
-const char GPS = 140;
-const char CAMERA = 141;
-const char JOYSTICK = 165;
-const char TTS = 143;
-const char WATCH = 144;
+const char CLEAR = 'L';//
+const char TIMEEPOCH = 'T';//
+const char VERSION = 'V';//
 
-const char DATA_OUT = 150;
-const char BUTTON_IN = 151;
-const char DATE_IN = 152;
-const char TIME_IN = 153;
-const char KEYBOARD_IN = 154;
-const char ANALOG_DIAL_OUT = 155;
-const char SLIDER_IN = 156;
-const char SMS = 160;
-const char VIBRATE = 161;
-const char DATA_OUT_CIRCLE = 162;
-const char DATA_OUT_HEADER = 163;
-const char CIRCLE_BUTTON = 164;
+const char CAMERA = 'M';//
+const char TTS = 'P';//
+const char VIBRATE = 'I';//
 
+const char SMS = 'S';//
+const char NOTIFICATION = 'N';//
+
+const char GYRO = 'O';//
+const char LAC = 'F';//
+const char GRAV = 'Y';//
+const char GPS = 'S';//
+
+const char DATA_OUT = 'C';//
+const char DATA_OUT_CIRCLE = 'G';//
+const char DATA_OUT_HEADER = 'H';//
+
+const char BUTTON_IN = 'B';//
+const char CIRCLE_BUTTON = 'J';//
+const char ACKN = 'A';//
+
+const char KEYBOARD_IN = 'K';//
+const char DATE_IN = 'D';//
+const char TIME_IN = 'X';//
+
+const char SLIDER_IN = 'Q';//
+
+const char ANALOG_DIAL_OUT = 'R';//
+
+const char JOYSTICK = 'U';//
+
+const char WATCH = 'W';//
+
+const char REMOVE = 'E';//
 
 ///////////////////Button Type Macros//////////////////////
 //TIME_IN, DATE_IN and KEYBOARD_IN are buttons as well so these macros work for them as well
 #define ACK '0'
 #define NOACK NO_ACK
 #define NO_ACK '1'
-
-/*
-#define ROUNDRECTNOBG ROUND_RECT_NO_BG
-#define ROUNDRECTBG ROUND_RECT_BG
-#define RECTNOBG RECT_NO_BG
-#define RECTBG RECT_BG
-#define CIRCLENOBG CIRCLE_NO_BG
-#define CIRCLEBG CIRCLE_BG
-*/
-
-#define ALIGN_CENTER '0'
-#define ALIGN_LEFT '1'
-#define HEADER '2'
-
-#define ROUND_RECT '0'
-#define CIRCLE '1'
-
-/*
-#define ROUND_RECT_NO_BG '0'
-#define ROUND_RECT_BG	'1'
-#define RECT_NO_BG	'2'
-#define RECT_BG	'3'
-#define CIRCLE_NO_BG	'4'
-#define CIRCLE_BG	'5'
-*/
 
 ///////////Keyboard Definitions////////////////
 
