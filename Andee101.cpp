@@ -140,7 +140,7 @@ void sendToPhone( char*UI )
   }
   else
   {
-	  Serial.println("ERROR with Connection");
+	  Serial.println("Phone not connected");
   }
 	  
 }
@@ -793,10 +793,12 @@ void Andee101Helper::setId(int value)
 	sprintf(dataBuffer,"%s","   ");
 	sprintf(titleBuffer,"%s","   ");
 	sprintf(unitBuffer,"%s","   ");
-	sprintf(titleBGBuffer,"%s","FF00FF00");
-	sprintf(titleFontBuffer,"%s","FFFF0000");
-	sprintf(bodyFontBuffer,"%s","FF0000FF");
-	sprintf(bodyBGBuffer,"%s","FF83A4C8");
+	
+	convertColor("FF00FF00",titleBGBuffer);
+	convertColor("FFFF0000",titleFontBuffer);
+	convertColor("FF0000FF",bodyFontBuffer);
+	convertColor("FF83A4C8",bodyBGBuffer);	
+	
 	sprintf(maxBuffer,"%s","   ");
 	sprintf(minBuffer,"%s","   ");
 	inputTypeBuffer = '0';
@@ -1479,6 +1481,7 @@ void Andee101Helper::update(void)
 	{
 		sprintf(bleBuffer,"%c%c%c%c%c%s%s%c%s%c", START_TAG_UIXYWH,WATCH,SEPARATOR,watchBuffer,SEPARATOR,titleBGBuffer,titleFontBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
 	}
+	
 	
 	printHEX(bleBuffer);
 	sendToPhone(bleBuffer);

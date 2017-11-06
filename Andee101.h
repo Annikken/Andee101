@@ -427,7 +427,7 @@ const char CAMERA = 'M';//
 const char TTS = 'P';//
 const char VIBRATE = 'I';//
 
-const char SMS = 'S';//
+const char SMS = 'Z';//
 const char NOTIFICATION = 'N';//
 
 const char GYRO = 'O';//
