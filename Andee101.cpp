@@ -932,8 +932,12 @@ void Andee101Helper::setCoord(unsigned int x, unsigned int y, unsigned int w, un
 		 h = C_LLIMIT;
 	}
 		
-	memset(xywhBuffer,0x00,13);
-	sprintf(xywhBuffer, "%03u%03u%03u%03u", x, y, w, h);
+	memset(xywhBuffer,0x00,5);
+	xywhBuffer[0] = x+32;
+	xywhBuffer[1] = y+32;
+	xywhBuffer[2] = w+32;
+	xywhBuffer[3] = h+32;
+	//sprintf(xywhBuffer, "%02u%02u%02u%03u", x, y, w, h);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

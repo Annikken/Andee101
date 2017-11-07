@@ -399,7 +399,7 @@ extern Andee101Class Andee101;
 /////////Definitions///////////
 ///////////////////////////////
 
-#define C_HLIMIT 999
+#define C_HLIMIT 99
 #define C_LLIMIT 0
 
 const char SET_COLOR = '0';
