@@ -400,7 +400,7 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		}
 		memset(readBuffer,0x00,128);
 	}
-	 else if(readBuffer[0] == VERSION)
+	 else if(readBuffer[0] == 0x88)
 	{
 		AndeeAlive= true;
 		memset(readBuffer,0x00,128);
@@ -454,7 +454,7 @@ void Andee101Class::broadcast()
 }
 
 void Andee101Class::resetBLE()
-{		
+{
 	if(resetBLEFlag == false)
 	{
 		
@@ -470,6 +470,7 @@ void Andee101Class::resetBLE()
 
 void Andee101Class::begin()
 {
+	
 	if (nameFlag == 0)
 	{
 		Andee101Peripheral.setLocalName("Andee101");
@@ -483,7 +484,7 @@ void Andee101Class::begin()
 	Andee101Read.setEventHandler(BLEWritten, readBLEBuffer);
 	Andee101Peripheral.setEventHandler(BLEConnected, blePeripheralConnectHandler);
 	Andee101Peripheral.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
-	Andee101Peripheral.begin();	
+	Andee101Peripheral.begin();
 	delay(5);
 	Andee101.broadcast();
 	
@@ -790,9 +791,9 @@ void Andee101Helper::setId(int value)
 {
 	id = value + 32;
 	
-	sprintf(dataBuffer,"%s","   ");
-	sprintf(titleBuffer,"%s","   ");
-	sprintf(unitBuffer,"%s","   ");
+	sprintf(dataBuffer,"%c%c%c%c",0x20,0x20,0x20,0x20);
+	sprintf(titleBuffer,"%c%c%c%c",0x20,0x20,0x20,0x20);
+	sprintf(unitBuffer,"%c%c%c%c",0x20,0x20,0x20,0x20);
 	
 	convertColor("FF00FF00",titleBGBuffer);
 	convertColor("FFFF0000",titleFontBuffer);
@@ -1031,11 +1032,11 @@ void Andee101Helper::setTextColor(char* color)
 
 void Andee101Helper::setData(const char* data)
 {
-	memset(dataBuffer,0x00,64);
-	if(data == 0x00)
-		{
-			data = " ";
-		}	
+	memset(dataBuffer,0x00,64);		
+	if(strlen(data) <= 0)
+	{
+		data = "     ";
+	}
     sprintf(dataBuffer, "%s", data);
 }
 
@@ -1061,10 +1062,10 @@ void Andee101Helper::setData(double data,char decPlace)
 
 void Andee101Helper::setTitle(const char* title)
 {
-	memset(titleBuffer,0x00,64);
-	if(title == 0x00)
+	memset(titleBuffer,0x00,64);	
+	if(strlen(title) <= 0)
 	{
-		title = " ";
+		title = "     ";
 	}
 	sprintf(titleBuffer, "%s", title);
 }
@@ -1091,11 +1092,10 @@ void Andee101Helper::setTitle(double title, char decPlace)
 
 void Andee101Helper::setUnit(const char* unit)
 {
-	memset(unitBuffer,0x00,64);
-    
-	if(unit == 0x00)
+	memset(unitBuffer,0x00,64);    
+	if(strlen(unit) <= 0)
 	{
-		unit = " ";
+		unit = "     ";
 	}
 	sprintf(unitBuffer, "%s", unit);
 }
@@ -1415,7 +1415,7 @@ void Andee101Helper::getJoystick(int* x,int* y)
 void Andee101Helper::update(void)
 {
 	Andee101.versionClear();
-	Andee101.isConnected();
+	//Andee101.isConnected();
 	
 	if(bleBuffer[1] == DATA_OUT)	
 	{
