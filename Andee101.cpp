@@ -32,9 +32,9 @@ bool AndeeAlive = false;
 bool dataLog = true;
 
 BLEPeripheral Andee101Peripheral;
-BLEService Andee101Service("0BD51666-E7CB-469B-8E4D-2742F1ACC355");
-BLECharacteristic Andee101Write ("E7ADD780-B042-4876-AAE1-1A51F5353CC1", BLEWrite | BLENotify, 20);
-BLECharacteristic Andee101Read ("E7ADD780-B042-4876-AAE1-1A51F5353CC2", BLEWrite | BLENotify, 20); 
+BLEService Andee101Service("516e7d03-c4ea-4103-9bd2-c560221a0c16");
+BLECharacteristic Andee101Write ("516e7d04-c4ea-4103-9bd2-c560221a0c16", BLEWrite | BLENotify, 20);
+BLECharacteristic Andee101Read ("516e7d05-c4ea-4103-9bd2-c560221a0c16", BLEWrite | BLENotify, 20); 
 															   
 Andee101Class Andee101;
 
