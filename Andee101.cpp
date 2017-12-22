@@ -585,7 +585,7 @@ void Andee101Class::disconnect(void){
 //                                                                                         //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void Andee101Class::textToSpeech(char accent, float speed, float pitch, char* speech)
+void Andee101Class::textToSpeech(char* speech, float speed, float pitch, char accent)
 {
 	char buffer[128];
 	sprintf(buffer, "%c%c%c%s%c%.01f%c%.01f%c%c%c", START_TAG_COMMAND, TTS, SEPARATOR, speech, SEPARATOR, speed, SEPARATOR, pitch, SEPARATOR, accent, END_TAG_COMMAND);

@@ -101,7 +101,7 @@ class Andee101Class
 	//This forces the smartphone/tablet to dsconnect its BLE
 	//The bytes sent are ASTART, DC, AEND
 	
-	void textToSpeech(char,float,float,char*);
+	void textToSpeech(char*,float,float,char);
 	//This function activates the Text to Speech(TTS) function on the smartphone/tablet. You can place accents, speed and pitch of speech and also the text to be spoken.
 	//accents available are US, GREAT_BRITON, AUSTRALIA, IRELAND, SOUTH_AFRICA 
 	//speed is a value from 0.0 to 2.0
