@@ -407,7 +407,7 @@ const char SET_TEXT_COLOR = '1';
 const char SET_TITLE_COLOR = '2';
 const char SET_TITLE_TEXT_COLOR = '3';
 
-const char SEPARATOR = 166;//0xA6;
+const char SEPARATOR = 251;//0xFB;
 const char START_TAG_VERSION = 123;//0x7B
 const char END_TAG_VERSION = 125;//0x7D
 const char START_TAG_COMMAND = 10;//0x0A
