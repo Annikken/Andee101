@@ -1298,7 +1298,16 @@ void Andee101Helper::setSliderInitialValue(double value,char decPlace)
 
 void Andee101Helper::setSliderNumIntervals(int numInterval)
 {
-	sprintf(unitBuffer,"%d",numInterval);
+	char temp;
+	if(numInterval < 223)
+	{
+		temp = numInterval + 32;
+	}
+	else
+	{
+		temp = 255;
+	}
+	sprintf(unitBuffer,"%c\0",temp);
 }
 
 
@@ -1473,7 +1482,7 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == SLIDER_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", START_TAG_UIXYWH,SLIDER_IN, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,SEPARATOR,dataBuffer,SEPARATOR,maxBuffer,SEPARATOR,minBuffer,SEPARATOR,unitBuffer,SEPARATOR,flashBuffer,END_TAG_UIXYWH);
+		sprintf(bleBuffer, "%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%c%c%c%c", START_TAG_UIXYWH,SLIDER_IN, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,SEPARATOR,dataBuffer,SEPARATOR,maxBuffer,SEPARATOR,minBuffer,SEPARATOR,unitBuffer,SEPARATOR,flashBuffer,END_TAG_UIXYWH);
 	}	
 	
 	else if(bleBuffer[1] == JOYSTICK)
