@@ -1281,20 +1281,21 @@ void Andee101Helper::setSliderInitialValue(int value)
 {
 	sprintf(dataBuffer,"%d",value);
 	sprintf(tempBuffer,"%d",value);
+	flashBuffer = '1';
 }
 
 void Andee101Helper::setSliderInitialValue(float value,char decPlace)
 {
 	dtostrf(value,3,decPlace,dataBuffer);
 	dtostrf(value,3,decPlace,tempBuffer);
+	flashBuffer = '1';
 }
 void Andee101Helper::setSliderInitialValue(double value,char decPlace)
 {
 	dtostrf(value,3,decPlace,dataBuffer);
 	dtostrf(value,3,decPlace,tempBuffer);
+	flashBuffer = '1';
 }
-
-
 
 void Andee101Helper::setSliderNumIntervals(char numInterval)
 {
@@ -1308,14 +1309,6 @@ void Andee101Helper::setSliderNumIntervals(char numInterval)
 		subBuffer = numInterval;
 	}
 }
-
-
-void Andee101Helper::moveSliderToValue(int value)
-{
-	flashBuffer = (char)value;
-}
-
-
 
 void Andee101Helper::getSliderValue(int* x)
 {	

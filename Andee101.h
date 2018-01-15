@@ -363,10 +363,7 @@ extern Andee101Class Andee101;
 	//This function works in a similar way as the above function but handles a double instead
 	
 	void setSliderNumIntervals(char);
-	//This functions sets the number of intervals the slider has
-	
-	void moveSliderToValue(int);		
-	//This function mvoes the slider to the specified value
+	//This functions sets the number of intervals the slider has	
 	
 	void getSliderValue(int*);
 	//This function returns the value the slider is at for integers
@@ -477,6 +474,7 @@ const char REMOVE = 'E';//
 
 #define setSliderMinMax setMinMax
 #define setSliderReportMode setInputMode
+#define moveSliderToValue setSliderInitialValue
 
 #define INT 0
 #define FLOAT (float) 0.0
