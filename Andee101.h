@@ -362,7 +362,7 @@ extern Andee101Class Andee101;
 	void setSliderInitialValue(double,char);
 	//This function works in a similar way as the above function but handles a double instead
 	
-	void setSliderNumIntervals(int);
+	void setSliderNumIntervals(char);
 	//This functions sets the number of intervals the slider has
 	
 	void moveSliderToValue(int);		
