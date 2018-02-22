@@ -4,10 +4,6 @@
   Clear Screen
 
   Use the Clear Screen command to everything on the Dashboard
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -23,10 +19,8 @@ Andee101Helper ClearButton;
 Andee101Helper objectA;
 Andee101Helper objectB;
 Andee101Helper objectC;
-boolean updateUI = false;
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101"); // Max 8 characters only
   Andee101.begin();  // Setup the Arduino 101 to start broadcasting as an Annikken Andee101 peripheral
   setInitialData();  // Define the UI objects and customise their appearance
@@ -76,25 +70,20 @@ void setInitialData()
  
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true)
-  {
-    if (updateUI == true) {
-      // Draw the UI
-      objectA.update();
-      objectB.update();
-      objectC.update();
-      ClearButton.update();
-      updateUI = false;
-    }
+  {    
+    objectA.update();
+    objectB.update();
+    objectC.update();
+    ClearButton.update();
+    delay(200);//delay is needed or else Arduino 101 will be crash
+   
     if (ClearButton.isPressed()) {
       ClearButton.ack();
       Andee101.clear(); // Remove all the UI on the Screen
-      updateUI = true; // set the flag to redraw the UI to True
-      delay(3000); // Wait for 3s before redrawing
+      delay(2000); // Wait for 3s before redrawing
     }
-  }
-  else {
-    updateUI = true;
   }
 }
 

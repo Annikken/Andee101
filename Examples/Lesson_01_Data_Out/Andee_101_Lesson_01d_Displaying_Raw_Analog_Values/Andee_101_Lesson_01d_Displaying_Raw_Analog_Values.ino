@@ -3,10 +3,6 @@
   ================
   Lesson 01d
   Displaying Raw Analog Input Information
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -44,11 +40,13 @@ void setInitialData()
 
 void loop() 
 {
+  Andee101.poll();//required in every Andee101 sketch
   if(Andee101.isConnected() == true)//Use this to tell the Arduino what to do when the Annikken Andee101 app has connected to it
   {
     int reading = analogRead(analogInputPin); 
     analogDisplay.setData(reading); // Set the display box with new data value
     analogDisplay.update(); // Update the display to show the new value
+    delay(100);//delay is needed or else Arduino 101 will be crash
   }
 
 }

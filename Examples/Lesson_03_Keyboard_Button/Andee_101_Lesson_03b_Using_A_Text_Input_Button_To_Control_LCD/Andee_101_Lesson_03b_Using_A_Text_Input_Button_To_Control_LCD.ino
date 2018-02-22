@@ -4,10 +4,6 @@
   ================
   Lesson 03b
   Using the Text Input Button to Control LCD Display
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -30,13 +26,13 @@ char userInputA[17]; // Always declare (required characters + 1)
 char userInputB[17];
 
 /* Initialise LCD Display. Here's the pin connection that we're using:
-   LCD RS pin to digital pin 2
-   LCD Enable pin to digital pin 3
+   LCD RS pin to digital pin 8
+   LCD Enable pin to digital pin 9
    LCD D4 pin to digital pin 4
    LCD D5 pin to digital pin 5
    LCD D6 pin to digital pin 6
    LCD D7 pin to digital pin 7 */
-LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 // The setup() function is meant to tell Arduino what to do
 // only when it starts up.
@@ -83,6 +79,7 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true) {
     if ( textInputButtonA.isPressed() )
     {

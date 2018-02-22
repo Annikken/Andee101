@@ -3,10 +3,6 @@
   ================
   Lesson 01a
   Creating Your First Display Boxes
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -30,7 +26,6 @@ int counter = 0;
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101"); // Max 8 characters only
   Andee101.begin();  // Setup the Arduino 101 to start broadcasting as an Annikken Andee101 peripheral 
   setInitialData();  // Define the UI objects and customise their appearance
@@ -83,10 +78,12 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true)
   {
     objectA.update();
     objectB.update();
+    delay(100);//delay is needed or else Arduino 101 will be crash
   }
 }
 

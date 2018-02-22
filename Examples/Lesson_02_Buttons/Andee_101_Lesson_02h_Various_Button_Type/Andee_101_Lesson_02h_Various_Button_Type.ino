@@ -3,10 +3,6 @@
   ================
   Lesson 02h
   Displaying the various Button Subtypes
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -31,8 +27,7 @@ void setup() {
 }
 
 void setInitialData()
-{ 
-  
+{
   displayBtn.setId(1); // Each object must have a unique ID number
   displayBtn.setType(DATA_OUT);// Defines object as a display box
   displayBtn.setCoord(3,3,94,42); // Sets the location and size of your object
@@ -69,6 +64,7 @@ void setInitialData()
 }
 
 void loop() {
+  Andee101.poll();//required in every Andee101 sketch
   // put your main code here, to run repeatedly:
   if(Andee101.isConnected() == true)
   {
@@ -81,6 +77,7 @@ void loop() {
         btn2.update();
         btn3.update();
         btn4.update();
+        delay(200);//delay is needed or else Arduino 101 will be crash
       }      
       UpdateFlag = true;
     }
@@ -91,6 +88,7 @@ void loop() {
       displayBtn.setData("Rounded Rect with"); 
       displayBtn.setUnit("No Background Color");
       displayBtn.update();
+      delay(100);
     }
     if(btn2.isPressed())
     {
@@ -99,6 +97,7 @@ void loop() {
       displayBtn.setData("Rounded Rect with");
       displayBtn.setUnit("Background Color");
       displayBtn.update();
+      delay(100);
     }
     if(btn3.isPressed())
     {
@@ -107,6 +106,7 @@ void loop() {
       displayBtn.setData("Circle with");
       displayBtn.setUnit("No Background Color");
       displayBtn.update();
+      delay(100);
     }
     if(btn4.isPressed())
     {
@@ -115,6 +115,7 @@ void loop() {
       displayBtn.setData("Circle with");
       displayBtn.setUnit("Background Color");
       displayBtn.update();
+      delay(100);
     }    
   }
   else{

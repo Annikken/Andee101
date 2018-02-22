@@ -13,15 +13,9 @@ extern BLECharacteristic Andee101Read;
 
 extern bool AndeeConnected;
 
-
-
 extern bool versionAndClear;
 
-
-
 extern bool resetBLEFlag;
-
-
 
 void printDEC(char*);
 //This function prints out buffers into the Serial Terminal with a Decimal format. THis helps users to easily verify if the data they send is correct.
@@ -104,7 +98,7 @@ class Andee101Class
 	//This forces the smartphone/tablet to dsconnect its BLE
 	//The bytes sent are ASTART, DC, AEND
 	
-	void textToSpeech(char*,float,float,char);
+	void textToSpeech(const char*,float,float,char);
 	//This function activates the Text to Speech(TTS) function on the smartphone/tablet. You can place accents, speed and pitch of speech and also the text to be spoken.
 	//accents available are US, GREAT_BRITON, AUSTRALIA, IRELAND, SOUTH_AFRICA 
 	//speed is a value from 0.0 to 2.0
@@ -188,7 +182,7 @@ class Andee101Class
 	void textInput();
 	//Call this to use the voice to text function of the Apple Watch
 	
-	void sendSMS(char*,char*);
+	void sendSMS(const char*,const char*);
 	//This function will make the app send an SMS to the receipient with a message
 	
 	void vibrate();

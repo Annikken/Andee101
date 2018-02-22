@@ -3,10 +3,6 @@
   ================
   Lesson 02c
   Creating a Toggle Button
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -43,11 +39,13 @@ void setInitialData()
   togglebutton.setCoord(0,0,100,25);
   togglebutton.setTitle("Turn On"); // Sets the initial words for button
   togglebutton.setColor(GREEN);
+  togglebutton.setTextColor(WHITE);
   // You can't use setData() and setUnit() for buttons.
 }
 
 // Arduino will run instructions here repeatedly until you power it off
 void loop() {
+  Andee101.poll();//required in every Andee101 sketch
   if(Andee101.isConnected() == true)//Use this to tell the Arduino what to do when the Annikken Andee101 app has connected to it
   {
     // Here's how you code the button action
@@ -57,7 +55,7 @@ void loop() {
       // until Arduino has sent an acknowledgement 
       togglebutton.ack(); 
       state = !state; // Change state
-      if(state == 0)
+      if(state == 1)
       {
         togglebutton.setTitle("Turn off"); 
         togglebutton.setColor(RED);   
@@ -72,5 +70,6 @@ void loop() {
     }
     
     togglebutton.update(); // Update your button to reflect the change in state
+    delay(100);//delay is needed or else Arduino 101 will be crash
   }
 }

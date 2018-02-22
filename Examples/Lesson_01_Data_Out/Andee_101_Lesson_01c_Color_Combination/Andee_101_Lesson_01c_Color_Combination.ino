@@ -1,12 +1,8 @@
-/************************************************************
+ee/************************************************************
   [ Andee - with Arduino/Genuino 101 ]
   ================
   Lesson 01c
   Color Combinations
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -288,24 +284,28 @@ void setInitialData()
   box12.setTextColor(WHITE); // Sets the font colour
   // The code below applies ONLY to display boxes. These will set the colour of the display box's title bar
   box12.setTitleColor(THEME_DEFAULT_DARK); // Title background colour
-  box12.setTitleTextColor(WHITE); // Title font colour     
+  box12.setTitleTextColor(WHITE); // Title font colour
 }
 
 void loop() {
+  Andee101.poll();//required in every Andee101 sketch
   if(Andee101.isConnected() == true)//Use this to tell the Arduino what to do when the Annikken Andee101 app has connected to it
-  {
+  {    
     box1.update(); // Update to show all the boxes on screen
     box2.update();
     box3.update();
     box4.update();
+    delay(200);
     box5.update();
     box6.update();
     box7.update();
     box8.update();
+    delay(200);
     box9.update();
     box10.update();
     box11.update();
     box12.update();
+    delay(200);//delay is needed or else Arduino 101 will be crash
   }
   
 }

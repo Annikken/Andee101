@@ -3,10 +3,6 @@
   ================
   Lesson 02b
   Creating a Multipress Button
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -17,7 +13,7 @@
 // a certain action instead or constantly pressing the button without delay.
 // This lesson will teach you all you need to know to do this!
 
-// To demonstrate this, we'll connect an LED and have the LED
+// To demonstrate this, we'll use the LED on the Arduino 101 and have the LED
 // flash repeatedly as long as the button is constantly pressed
 
 // Always include these libraries. Annikken Andee101 needs them
@@ -30,7 +26,7 @@
 Andee101Helper displaybox;
 Andee101Helper button;
 
-const int pinLED = 2; // Set LED pin to output pin 2
+const int pinLED = 13; // Set LED pin to output pin 13 to control the Arduino 101 LED
 boolean LEDState = false;
 boolean updateUI = false;
 // The setup() function is meant to tell Arduino what to do
@@ -40,7 +36,7 @@ void setup()
   Andee101.begin();  // Setup communication between Annikken Andee101 and Arduino
   setInitialData(); // Define object types and their appearance
 
-  pinMode(pinLED, OUTPUT); // Configures pin 2 for output.
+  pinMode(pinLED, OUTPUT); // Configures pin 13 for output.
 }
 
 // This is the function meant to define the types and the apperance of
@@ -65,8 +61,9 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true)
-  { 
+  {
     // Here's how you code a press-and-hold button:
     if ( button.isPressed() > 0 ) // Do this as long as the button is pressed
     {
@@ -77,6 +74,7 @@ void loop()
     if ( updateUI == true) {
       displaybox.update();
       button.update(); 
+      delay(100);//delay is needed or else Arduino 101 will be crash
       updateUI = false;
     } 
   }

@@ -29,7 +29,7 @@ bool versionAndClear = false;
 bool resetBLEFlag = true;
 bool AndeeAlive = false;
 
-bool dataLog = true;
+bool dataLog = false;
 
 BLEPeripheral Andee101Peripheral;
 BLEService Andee101Service("516e7d03-c4ea-4103-9bd2-c560221a0c16");
@@ -140,7 +140,7 @@ void sendToPhone( char*UI )
   }
   else
   {
-	  Serial.println("Phone not connected");
+	  //Serial.println("Phone not connected");
   }
 	  
 }
@@ -183,7 +183,6 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 	memset(buffer,0x00,20);
 	
     mLen = strlen( (const char*) Andee101Read.value() );
-	Serial.println(mLen);
 	
 	memcpy(buffer, (char*) Andee101Read.value() , mLen);
     
@@ -201,7 +200,6 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 	
 	printHEX(readPartBuffer);
 	rLen = strlen(readPartBuffer);
-	Serial.println(rLen);
 	
 	for(unsigned int b = 0; b < rLen ;b++)
 	{
@@ -209,7 +207,7 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		if(readPartBuffer[b] == END_TAG_REPLY)
 		{
             
-			readPartBuffer[b+1] = '\0';
+			readPartBuffer[b] = '\0';
 			memset(readBuffer,0x00,128);
 			memcpy(readBuffer,readPartBuffer,rLen);
 			memset(readPartBuffer,0x00,64);
@@ -232,9 +230,10 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 
 void processReply()
 {
-	unsigned char pressBuffer = 0;
+	unsigned char pressBuffer = 0;	
 	
-	if (readBuffer[0] == BUTTON_IN || readBuffer[0] == KEYBOARD_IN|| readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN)		
+	if (	readBuffer[0] == BUTTON_IN || readBuffer[0] == KEYBOARD_IN|| 
+			readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN || readBuffer[0] == CIRCLE_BUTTON)		
 	{
 		buttonBuffer[0] = 'B';
 		buttonBuffer[1] = 'U';
@@ -260,12 +259,9 @@ void processReply()
 		if(readBuffer[0] == KEYBOARD_IN || readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN)
 		{
 			memset(phoneBuffer,0x00,64);
-			int buffLen = 0;
-			
-			buffLen = strlen(readBuffer);
-			readBuffer[buffLen-2] = '\0';			
-			memcpy(phoneBuffer,readBuffer + 4,(buffLen - 1));			
-			
+			int buffLen = strlen(readBuffer);			
+			memcpy(phoneBuffer,readBuffer + 4,(buffLen - 4));
+			Serial.println(phoneBuffer);
 		}
 		memset(readBuffer,0x00,128);
 		return;
@@ -291,7 +287,7 @@ void processReply()
 			}				
 		}
 		
-		for(i = 0;i<20;i++)
+		for(i = 0;i<MAXSLIDER;i++)
 		{
 			if(sliderBuffer[i][0] == 0x00)
 			{
@@ -360,25 +356,25 @@ void processReply()
 	else if(readBuffer[0] == GYRO)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	else if(readBuffer[0] == LAC)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	else if(readBuffer[0] == GRAV)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	else if(readBuffer[0] == GPS)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	
@@ -609,7 +605,7 @@ void Andee101Class::disconnect(void){
 //                                                                                         //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void Andee101Class::textToSpeech(char* speech, float speed, float pitch, char accent)
+void Andee101Class::textToSpeech(const char* speech, float speed, float pitch, char accent)
 {
 	char buffer[128];
 	sprintf(buffer, "%c%c%c%s%c%.01f%c%.01f%c%c%c", START_TAG_COMMAND, TTS, SEPARATOR, speech, SEPARATOR, speed, SEPARATOR, pitch, SEPARATOR, accent, END_TAG_COMMAND);
@@ -722,7 +718,7 @@ void Andee101Class::getGravReading(float* x,float* y,float* z)
 
 void Andee101Class::gpsInit(int interval, int iteration)
 {
-	char buffer[64];	
+	char buffer[64];
 	sprintf(buffer,"%c%c%c%c%d%c%d%c",START_TAG_COMMAND,GPS,'0',SEPARATOR,interval,SEPARATOR,iteration,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(50);
@@ -782,7 +778,7 @@ void Andee101Class::textInput()
 	delay(2);
 }
 
-void Andee101Class::sendSMS(char* number,char* message)
+void Andee101Class::sendSMS(const char* number,const char* message)
 {
 	char buffer[64];
 	sprintf(buffer,"%c%c%c%s%c%s%c",START_TAG_COMMAND,SMS,SEPARATOR,number,SEPARATOR,message,END_TAG_COMMAND);
@@ -1181,7 +1177,6 @@ void Andee101Helper::setMinMax(double min,double max,char decPlace)
 
 void Andee101Helper::getKeyboardMessage(char* message)
 {	
-	phoneBuffer[(strlen(phoneBuffer)-1)] = '\0';
 	sprintf(message,"%s", phoneBuffer);
 	return;	
 }
@@ -1459,6 +1454,8 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == BUTTON_IN)
 	{
+		memcpy(titleBGBuffer,bodyBGBuffer,5);
+		memcpy(titleFontBuffer,bodyFontBuffer,5);
 		sprintf(bleBuffer, "%c%c%c%s%c%c%s%s%c%s%c",START_TAG_UIXYWH,BUTTON_IN, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,titleFontBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
 	}
 	else if(bleBuffer[1] == CIRCLE_BUTTON)
@@ -1512,7 +1509,7 @@ void Andee101Helper::update(void)
 		sprintf(bleBuffer,"%c%c%c%c%c%s%s%c%s%c", START_TAG_UIXYWH,WATCH,SEPARATOR,watchBuffer,SEPARATOR,titleBGBuffer,titleFontBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
 	}
 	
-	printHEX(bleBuffer);
+	//printHEX(bleBuffer);
 	sendToPhone(bleBuffer);
 	delay(5);
 }

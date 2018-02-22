@@ -3,10 +3,6 @@
   ================ 
   Text-to-Speech
   
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
-
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
   Annikken Andee
@@ -22,14 +18,12 @@
 Andee101Helper objectA;
 Andee101Helper objectB;
 
-
 // We're creating two objects
 
 // The setup() function is meant to tell Arduino what to do
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101");
   Andee101.begin();  // Setup communication between  Andee and Arduino
   Andee101.clear();  // Clear the screen of any previous displays
@@ -61,30 +55,33 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
+  
   if (Andee101.isConnected() == true) {
     objectA.update(); // Call update() to refresh the display on your screen
     objectB.update(); // If you forgot to call update(), your object won't appear
+    delay(100);//delay is needed or else Arduino 101 will be crash
+    
     if (objectB.isPressed()) {
       objectB.ack();
       // Normal speed, Normal Pitch (1.0f,1.0f)
-      Andee101.textToSpeech(US, 1.0f, 1.0f, "My heart is impressed, experienced");
+      Andee101.textToSpeech("My heart is impressed, experienced", 1.0f, 1.0f, US );
       delay(2000);
       // High speed, Normal Pitch (1.2f,1.0f)
-      Andee101.textToSpeech(US, 1.2f, 1.0f, "broken and healed strong");
+      Andee101.textToSpeech("broken and healed strong", 1.3f, 1.0f, US);
       delay(2000);
       // Low speed, Normal Pitch (0.8f,1.0f)
-      Andee101.textToSpeech(US, 0.8f, 1.0f, "fused with the world");
+      Andee101.textToSpeech("fused with the world", 0.5f, 1.0f, US);
       delay(2000);
       // Normal speed, High Pitch (1.0f,1.2f)
-      Andee101.textToSpeech(US, 1.0f, 1.2f, "through the fire of passion");
+      Andee101.textToSpeech("through the fire of passion", 1.0f, 1.3f, US);
       delay(2000);
       // Normal speed, Low Pitch (1.0f,0.8f)
-      Andee101.textToSpeech(US, 1.0f, 0.8f, "connected to my mind");
+      Andee101.textToSpeech("connected to my mind", 1.0f, 0.7f, US);
       delay(1000);
       // Normal speed, Normal Pitch (1.0f,1.0f)
-      Andee101.textToSpeech(US, 1.0f, 1.0f, "through my dreams");
+      Andee101.textToSpeech("through my dreams", 1.0f, 1.0f , US);
     }
-    delay(500);
   }
 }
 

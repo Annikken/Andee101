@@ -2,11 +2,7 @@
   [ Andee - with Arduino/Genuino 101 ]
   ================
   Lesson 07
-  Creating A Slider Widget
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
+  Creating A Slider Widget  
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -30,7 +26,6 @@ int lastA, lastB;
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101");
   Andee101.begin();  // Setup communication between  Andee and Arduino
   Andee101.clear();  // Clear the screen of any previous displays
@@ -70,10 +65,9 @@ void setInitialData()
   UIText2.setData(35);
   UIText2.setUnit(" ");
 
-
   UI2.setId(3);
   UI2.setType(SLIDER_IN);
-  UI2.setInputMode(ON_VALUE_CHANGE);
+  UI2.setInputMode(ON_FINGER_UP);
   UI2.setSliderNumIntervals(50);
   UI2.setCoord(2, 76, 96  , 22);
   UI2.setActiveColor(RED);//Setting the Active Bar and Font Color
@@ -87,12 +81,17 @@ void setInitialData()
 int makeUI = false;
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true) { 
     if (makeUI == true) {
-      UI1.update();
-      UI2.update();
-      UIText1.update();
-      UIText2.update();
+      for(int i = 0;i<3;i++)
+      {
+        UI1.update();
+        UI2.update();
+        UIText1.update();
+        UIText2.update();
+        delay(200);//delay is needed or else Arduino 101 will be crash
+      }   
       makeUI = false;
     }
     int A = 0;
@@ -111,14 +110,6 @@ void loop()
       UIText2.setData(B);
       UIText2.update();
     }
-
-    Serial.print(A);
-    Serial.print(" + ");
-    Serial.print(B);
-    Serial.print(" = ");
-    Serial.println((A + B));
-
-    delay(500);
   }
   else {
     makeUI = true;
