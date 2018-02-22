@@ -7,7 +7,7 @@
 #include <TimeLib.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','4','.','0'};
+char Andee101Version[5] = {'1','.','2','.','0'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -18,7 +18,7 @@ char sensorsBuffer[64];
 char readBuffer[128];
 char readPartBuffer[64];
 char phoneBuffer[64];
-char sliderBuffer[20][20];
+char sliderBuffer[MAXSLIDER][20];
 
 
 char JoystickBufferX [4];
@@ -172,20 +172,22 @@ void blePeripheralDisconnectHandler(BLECentral& central) {
 }
 
 void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
-{
-  unsigned char pressBuffer;
-  int mLen;
+{  
+  unsigned int mLen;
+  unsigned int rLen;
   char buffer[20];
   
     
   if(Andee101Read.value())
   {
-	memset(buffer,0x00,19);
-      
-	memcpy(buffer,(char*)Andee101Read.value(),(strlen((const char*)Andee101Read.value())));
-    mLen = strlen(buffer);
-	buffer[18] = '\0';
-     
+	memset(buffer,0x00,20);
+	
+    mLen = strlen( (const char*) Andee101Read.value() );
+	Serial.println(mLen);
+	
+	memcpy(buffer, (char*) Andee101Read.value() , mLen);
+    
+	buffer[mLen] = '\0';    
 	
 	if(readPartBuffer[0] != 0x00)
 	{
@@ -197,24 +199,40 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		memcpy(readPartBuffer,buffer,mLen);			
 	}
 	
-	for(unsigned int b = 0; b < strlen(readPartBuffer);b++)
+	printHEX(readPartBuffer);
+	rLen = strlen(readPartBuffer);
+	Serial.println(rLen);
+	
+	for(unsigned int b = 0; b < rLen ;b++)
 	{
         
-		if(readPartBuffer[b] == 0x0D)
+		if(readPartBuffer[b] == END_TAG_REPLY)
 		{
             
 			readPartBuffer[b+1] = '\0';
 			memset(readBuffer,0x00,128);
-			memcpy(readBuffer,readPartBuffer,strlen(readPartBuffer));
+			memcpy(readBuffer,readPartBuffer,rLen);
 			memset(readPartBuffer,0x00,64);
 		}
 	}
   }
 	
-	printHEX(readBuffer);
-	
+	printHEX(readBuffer);	
 	 
-	pressBuffer = 0;
+	
+  
+  //return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                           //
+//            				   Processing Replies from Smart Device      					 //
+//                                                                                           //
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void processReply()
+{
+	unsigned char pressBuffer = 0;
 	
 	if (readBuffer[0] == BUTTON_IN || readBuffer[0] == KEYBOARD_IN|| readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN)		
 	{
@@ -407,14 +425,18 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		Serial.println("testing receivers");	
 		return;
 	}
+	else if(readBuffer[0] == 0x00)
+	{
+		//ignore this state
+	}
 	else
 	{
 		memset(readBuffer,0x00,128);
 		Serial.println("Command not recognised");
-	}
-  
-  return;
+	} 
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                    //
@@ -500,6 +522,8 @@ void Andee101Class::begin()
 void Andee101Class::poll()
 {
 	Andee101Peripheral.poll();
+	
+	processReply();
 }
 
 void Andee101Class::setName(const char* name)
@@ -773,6 +797,8 @@ void Andee101Class::vibrate()
 	sendToPhone(buffer);
 	delay(2);
 }
+
+
 
 
 
@@ -1299,7 +1325,6 @@ void Andee101Helper::setSliderInitialValue(double value,char decPlace)
 
 void Andee101Helper::setSliderNumIntervals(char numInterval)
 {
-	char temp;
 	if(numInterval < 223)
 	{
 		subBuffer = numInterval + 32;
@@ -1316,7 +1341,7 @@ void Andee101Helper::getSliderValue(int* x)
 	unsigned int i = 0;
 	memset(buffer,0x00,20);
 	
-	for(i = 0; i < 20; i++)
+	for(i = 0; i < MAXSLIDER; i++)
 	{
 		if(sliderBuffer[i][0] == id)
 		{
@@ -1340,7 +1365,7 @@ void Andee101Helper::getSliderValue(float* f)
 	char buffer[20];
 	unsigned int i = 0;
 	memset(buffer,0x00,20);
-	for(i = 0; i < 20; i++)
+	for(i = 0; i < MAXSLIDER; i++)
 	{
 		if(sliderBuffer[i][0] == id)
 		{
@@ -1362,7 +1387,7 @@ void Andee101Helper::getSliderValue(double* d)
 	char buffer[20];
 	unsigned int i = 0;
 	memset(buffer,0x00,20);
-	for(i = 0; i < 20; i++)
+	for(i = 0; i < MAXSLIDER; i++)
 	{
 		if(sliderBuffer[i][0] == id)
 		{
@@ -1489,7 +1514,7 @@ void Andee101Helper::update(void)
 	
 	printHEX(bleBuffer);
 	sendToPhone(bleBuffer);
-	delay(2);
+	delay(5);
 }
 
 

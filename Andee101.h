@@ -58,6 +58,9 @@ void readBLEBuffer(BLECentral&,BLECharacteristic&);
 //Some types, like buttons, will share the same buffers.
 //The P_SEP byte acts as a comma in between data for some types
 
+void processReply();
+//This function processes the replies from the smart device
+
 class Andee101Class
 {
 	public:
@@ -190,6 +193,8 @@ class Andee101Class
 	
 	void vibrate();
 	//This function will cause the smartdevice to vibrate for roughly 1 second
+	
+	
 } ;
 extern Andee101Class Andee101;
 ///////////////////////////////////
@@ -411,14 +416,13 @@ const char START_TAG_COMMAND = 10;//0x0A
 const char END_TAG_COMMAND = 11;//0x0B
 const char START_TAG_UIXYWH = 4;//0x04
 const char END_TAG_UIXYWH = 5;//0x05
-const char END_TAG_REPLY = 11;//0x0B
+const char END_TAG_REPLY = 93;//0x5D
 
 
 const char DC= 149;
 
 const char CLEAR = 'L';//
 const char TIMEEPOCH = 'T';//
-const char VERSION = 'V';//
 
 const char CAMERA = 'M';//
 const char TTS = 'P';//
@@ -483,6 +487,7 @@ const char REMOVE = 'E';//
 #define ON_FINGER_UP '0'
 #define ON '1'
 #define OFF '0'
+#define MAXSLIDER 10
 
 /////////////////////////Text to Speech Macros//////////////////////
 
