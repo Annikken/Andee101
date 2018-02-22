@@ -2,10 +2,6 @@
   [ Andee - with Arduino/Genuino 101 ]
   ================ 
   Take a Photo
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -31,7 +27,6 @@ Andee101Helper objectD;
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101");
   Andee101.begin();  // Setup communication between  Andee and Arduino
   Andee101.clear();  // Clear the screen of any previous displays
@@ -57,6 +52,7 @@ void setInitialData()
   objectC.setCoord(0, 50, 100, 25);
   objectC.setTitle("Front Camera, Flash Off, Auto Focus");
   objectC.setColor("FF0000F8");
+  objectC.setTextColor(WHITE);
 
   objectD.setId(3);  // Each object must have a unique ID number
   objectD.setType(BUTTON_IN);  // This defines your object as a BUTTON
@@ -68,11 +64,14 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true) {
     objectA.update(); // Call update() to refresh the display on your screen
     objectB.update(); // If you forgot to call update(), your object won't appear
     objectC.update();
     objectD.update();
+    delay(200);//delay is needed or else Arduino 101 will be crash
+    
     if (objectA.isPressed()) {
       objectA.ack();
       Andee101.takePhoto(CAM_DEFAULT, On, On);
@@ -89,8 +88,6 @@ void loop()
       objectD.ack();
       Andee101.takePhoto(FRONT, On, Off);
     }
-    // A short delay is necessary to give Andee time to communicate with the smartphone
-    delay(500);
   }
 }
 

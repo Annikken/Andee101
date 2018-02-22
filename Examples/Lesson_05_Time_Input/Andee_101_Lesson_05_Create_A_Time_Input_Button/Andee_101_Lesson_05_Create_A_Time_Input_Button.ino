@@ -2,11 +2,7 @@
   [ Andee - with Arduino/Genuino 101 ]
   ================
   Lesson 05
-  Creating Your Time Input Button
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
+  Creating Your Time Input Button 
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -32,7 +28,6 @@ char text[64];
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101");
   Andee101.begin();  // Setup communication between  Andee and Arduino
   Andee101.clear();  // Clear the screen of any previous displays
@@ -74,9 +69,11 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected()  == true) {
     objectA.update(); // Call update() to refresh the display on your screen
     objectB.update(); // If you forgot to call update(), your object won't appear
+    
     if (objectB.isPressed()) {
       objectB.ack();
       objectB.getTimeInput (&H, &M, &S);
@@ -84,6 +81,7 @@ void loop()
       objectA.setData(text);
     }
   }
+  delay(100);//delay is needed or else Arduino 101 will be crash
 }
 
 

@@ -3,10 +3,6 @@
   ================
   Lesson 02f
   Control LED or Relay using Buttons
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -26,8 +22,6 @@ Andee101Helper displayState;
 Andee101Helper togglebutton;
 
 // Connect LED/Relay to Pin 2
-// Do not use Pins 8, 11, 12, 13 (Arduino Uno layout) as Andee101 
-// is using them. Strange things will happen if you do.
 const int outputPin = 2;
 
 int state; // This variable will store the current state
@@ -68,9 +62,9 @@ void setInitialData()
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {  
+  Andee101.poll();//required in every Andee101 sketch
   if(Andee101.isConnected() == true)
   {  
-  
     state = digitalRead(outputPin); // Read current state of the output pin
     
     // Change text in the display box to indicate the current state of the pin
@@ -103,7 +97,7 @@ void loop()
     displayState.update(); // Update new info onto smartphone screen 
     togglebutton.update(); 
   
-    delay(500); // Always leave a short delay for Bluetooth communication
+    delay(300); // Always leave a short delay for Bluetooth communication
   }
 }
 

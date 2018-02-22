@@ -3,10 +3,6 @@
   ================
   Lesson 03a
   Creating A Text Input Button
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -24,7 +20,6 @@
 Andee101Helper objectA;
 Andee101Helper objectB;
 bool makeUI = false;
-long updateCounter = 0;
 char text[64];
 
 // We're creating two objects
@@ -33,7 +28,6 @@ char text[64];
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101"); // Max 8 characters only
   Andee101.begin();  // Setup the Arduino 101 to start broadcasting as an Annikken Andee101 peripheral 
   setInitialData();  // Define the UI objects and customise their appearance 
@@ -74,28 +68,22 @@ void setInitialData()
 
 void loop()
 {
+  Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true)
-  {
-    updateCounter++;
-     
+  {     
     if (makeUI == true) {
-      if (updateCounter % 25 == 0) {
-        Serial.println("Connected");
-    }
       objectA.update(); // Call update() to refresh the display on your screen
       objectB.update(); // If you forgot to call update(), your object won't appear
       makeUI = false;
     }
-    if (objectB.isPressed()) {
-            if (updateCounter % 25 == 0) {
-        Serial.println("Not Connected");
-    }
+    if (objectB.isPressed()) {         
       objectB.ack();
       objectB.getKeyboardMessage(text);
       Serial.println(text);
       objectA.setData(text);
        objectA.update(); 
     }
+    delay(100);//delay is needed or else Arduino 101 will be crash
   }
   else {
     makeUI = true;

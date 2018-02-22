@@ -3,10 +3,6 @@
   ================
   Lesson 02a
   Creating Your First Button
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -31,7 +27,6 @@ int ButtonCounter = 0;
 // only when it starts up.
 void setup()
 {
-  Serial.begin(9600);
   Andee101.setName("Andee101"); // Max 8 characters only
   Andee101.begin();  // Setup the Arduino 101 to start broadcasting as an Annikken Andee101 peripheral 
   setInitialData();  // Define the UI objects and customise their appearance
@@ -70,6 +65,8 @@ void setInitialData()
  
 void loop()
 {
+  Andee101.poll();
+  
   if (Andee101.isConnected() == true)
   { 
     objectA.update(); // Call update() to refresh the display on your screen
@@ -79,9 +76,10 @@ void loop()
       objectB.ack(); // Ack will clear the black shroud covering the button once it has been pressed
       ButtonCounter++; 
       objectA.setData(ButtonCounter);
-      objectA.update();
-    } 
-  }
+      objectA.update();      
+    }
+    delay(100);
+  }  
 }
 
 

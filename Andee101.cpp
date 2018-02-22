@@ -1,6 +1,5 @@
 // Andee101.cpp - Arduino 101 Library
 // Annikken Pte Ltd
-// Copyright (c) 2016 Annikken Pte Ltd.  All right reserved.
 // Author: Muhammad Hasif
 
 #include <CurieBle.h>
@@ -8,7 +7,7 @@
 #include <TimeLib.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','0','0'};
+char Andee101Version[5] = {'1','.','2','.','0'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -19,7 +18,7 @@ char sensorsBuffer[64];
 char readBuffer[128];
 char readPartBuffer[64];
 char phoneBuffer[64];
-char sliderBuffer[128];
+char sliderBuffer[MAXSLIDER][20];
 
 
 char JoystickBufferX [4];
@@ -30,10 +29,12 @@ bool versionAndClear = false;
 bool resetBLEFlag = true;
 bool AndeeAlive = false;
 
+bool dataLog = false;
+
 BLEPeripheral Andee101Peripheral;
-BLEService Andee101Service("0BD51666-E7CB-469B-8E4D-2742F1ACC355");
-BLECharacteristic Andee101Write ("E7ADD780-B042-4876-AAE1-1A51F5353CC1", BLEWrite | BLENotify, 20);
-BLECharacteristic Andee101Read ("E7ADD780-B042-4876-AAE1-1A51F5353CC2", BLEWrite | BLENotify, 20); 
+BLEService Andee101Service("516e7d03-c4ea-4103-9bd2-c560221a0c16");
+BLECharacteristic Andee101Write ("516e7d04-c4ea-4103-9bd2-c560221a0c16", BLEWrite | BLENotify, 20);
+BLECharacteristic Andee101Read ("516e7d05-c4ea-4103-9bd2-c560221a0c16", BLEWrite | BLENotify, 20); 
 															   
 Andee101Class Andee101;
 
@@ -43,24 +44,72 @@ Andee101Class Andee101;
 //                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void convertColor (const char* colorBuffer, char* outputColor)//converting color from 0 to 255 to 32 to 200
+{
+    int x = 0;
+    char tmp[3];
+    int colorByte;
+    char newColor[5];
+
+    for(x = 0; x < 4; x++ )
+    {
+        strncpy(tmp,colorBuffer + x*2,2);
+        tmp[2] = '\0';
+        sscanf(tmp,"%X",&colorByte);
+        colorByte = ((colorByte * 200) / 255) + 32;
+        newColor[x] = (char)colorByte;
+    }
+    newColor[4] = '\0';
+	strcpy(outputColor,newColor);
+    /* if(type == SET_COLOR )
+    {
+        strcpy(bodyBGBuffer,newColor);
+        //printHex("bodyBG",bodyBGBuffer,andeeLog);
+    }
+    else if(type == SET_TEXT_COLOR)
+    {
+        strcpy(bodyFontBuffer,newColor);
+        //printHex("bodyFont",bodyFontBuffer,andeeLog);
+    }
+    else if(type == SET_TITLE_COLOR)
+    {
+        strcpy(titleBGBuffer,newColor);
+        //printHex("titleBG",titleBGBuffer,andeeLog);
+
+    }
+    else if(type == SET_TITLE_TEXT_COLOR)
+    {
+        strcpy(titleFontBuffer,newColor);
+        //printHex("titleFont",titleFontBuffer,andeeLog);
+    }     */
+}
+
 void printDEC(char* buffer)
 {
-	Serial.print("DEC:");
-	for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+	if(dataLog == true)
 	{
-		Serial.print(buffer[v] & 0xFF,DEC);Serial.print(" ");
+		Serial.print("DEC:");
+		for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+		{
+			Serial.print(buffer[v] & 0xFF,DEC);Serial.print(" ");
+		}
+		Serial.println("");
 	}
-	Serial.println("");
+	
 }
 
 void printHEX(char* buffer)
 {
-	Serial.print("HEX:");
-	for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+	if(dataLog == true)
 	{
-		Serial.print(buffer[v] & 0xFF,HEX);Serial.print(" ");
+		Serial.print("HEX:");
+		for(unsigned int v = 0; v < (strlen(buffer)) ; v++)
+		{
+			Serial.print(buffer[v] & 0xFF,HEX);Serial.print(" ");
+		}
+		Serial.println("");	
 	}
-	Serial.println("");	
+	
 }
 
 void sendToPhone( char*UI )
@@ -68,7 +117,7 @@ void sendToPhone( char*UI )
   char partialUI[18] = {};
   int msgLen = 0;
   msgLen = strlen(UI);
-  if(AndeeConnected == true)
+  if(Andee101Write.subscribed() == true)
   {
 	  if (msgLen >= 19)
 	  {
@@ -89,12 +138,16 @@ void sendToPhone( char*UI )
 			 
 	  }  
   }
+  else
+  {
+	  //Serial.println("Phone not connected");
+  }
 	  
 }
 
 void systemTime(void)
 {
-	char msgToPhone[18] = {ASTART,TIMEEPOCH,AEND,0x00,0x00,0x00,
+	char msgToPhone[18] = {START_TAG_COMMAND,TIMEEPOCH,END_TAG_COMMAND,0x00,0x00,0x00,
 						   0x00,0x00,0x00,0x00,0x00,0x00,
 						   0x00,0x00,0x00,0x00,0x00,0x00};
 	sendToPhone(msgToPhone);
@@ -119,20 +172,21 @@ void blePeripheralDisconnectHandler(BLECentral& central) {
 }
 
 void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
-{
-  unsigned char pressBuffer;
-  int mLen;
+{  
+  unsigned int mLen;
+  unsigned int rLen;
   char buffer[20];
   
     
   if(Andee101Read.value())
   {
-	memset(buffer,0x00,19);
-      
-	memcpy(buffer,(char*)Andee101Read.value(),(strlen((const char*)Andee101Read.value())));
-    mLen = strlen(buffer);
-	buffer[18] = '\0';
-     
+	memset(buffer,0x00,20);
+	
+    mLen = strlen( (const char*) Andee101Read.value() );
+	
+	memcpy(buffer, (char*) Andee101Read.value() , mLen);
+    
+	buffer[mLen] = '\0';    
 	
 	if(readPartBuffer[0] != 0x00)
 	{
@@ -144,25 +198,42 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		memcpy(readPartBuffer,buffer,mLen);			
 	}
 	
-	for(unsigned int b = 0; b < strlen(readPartBuffer);b++)
+	printHEX(readPartBuffer);
+	rLen = strlen(readPartBuffer);
+	
+	for(unsigned int b = 0; b < rLen ;b++)
 	{
         
-		if(readPartBuffer[b] == 0x0D)
+		if(readPartBuffer[b] == END_TAG_REPLY)
 		{
             
-			readPartBuffer[b+1] = '\0';
+			readPartBuffer[b] = '\0';
 			memset(readBuffer,0x00,128);
-			memcpy(readBuffer,readPartBuffer,strlen(readPartBuffer));
+			memcpy(readBuffer,readPartBuffer,rLen);
 			memset(readPartBuffer,0x00,64);
 		}
 	}
+  }
 	
-	printHEX(readBuffer);
-	
+	printHEX(readBuffer);	
 	 
-	pressBuffer = 0;
 	
-	if (readBuffer[0] == BUTTON_IN || readBuffer[0] == KEYBOARD_IN|| readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN)		
+  
+  //return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                           //
+//            				   Processing Replies from Smart Device      					 //
+//                                                                                           //
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+void processReply()
+{
+	unsigned char pressBuffer = 0;	
+	
+	if (	readBuffer[0] == BUTTON_IN || readBuffer[0] == KEYBOARD_IN|| 
+			readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN || readBuffer[0] == CIRCLE_BUTTON)		
 	{
 		buttonBuffer[0] = 'B';
 		buttonBuffer[1] = 'U';
@@ -188,12 +259,9 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		if(readBuffer[0] == KEYBOARD_IN || readBuffer[0] == TIME_IN || readBuffer[0] == DATE_IN)
 		{
 			memset(phoneBuffer,0x00,64);
-			int buffLen = 0;
-			
-			buffLen = strlen(readBuffer);
-			readBuffer[buffLen-2] = '\0';			
-			memcpy(phoneBuffer,readBuffer + 4,(buffLen - 1));			
-			
+			int buffLen = strlen(readBuffer);			
+			memcpy(phoneBuffer,readBuffer + 4,(buffLen - 4));
+			Serial.println(phoneBuffer);
 		}
 		memset(readBuffer,0x00,128);
 		return;
@@ -202,13 +270,13 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 	{
 		char value[18];
 		char iid;
-		char temp[60];		
+		unsigned int i = 0;
 		
 		iid = readBuffer[2];
 		
 		for(unsigned int i = 0; i < strlen(readBuffer);i++)
 		{
-			if(readBuffer[i+4] != P_SEP)
+			if(readBuffer[i+4] != SEPARATOR)
 			{
 				value[i] = readBuffer[i+4];
 			}
@@ -219,54 +287,21 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 			}				
 		}
 		
-		if(sliderBuffer[0] == 0x00)
+		for(i = 0;i<MAXSLIDER;i++)
 		{
-			sliderBuffer[0] = '1';
-			sliderBuffer[1] = iid;
-			sliderBuffer[2] = 2 + strlen(value);
-			memcpy(sliderBuffer + 3,value,strlen(value));
-		}
-		else
-		{
-			for(unsigned int j = 1; j < strlen(readBuffer);)
+			if(sliderBuffer[i][0] == 0x00)
 			{
-				if(sliderBuffer[j] == iid)
-				{
-					if(sliderBuffer[j+(sliderBuffer[j+1])] == 0x00)
-					{
-						memcpy(sliderBuffer + j + 2,value,strlen(value));
-						sliderBuffer[strlen(sliderBuffer)+1] = '\0';
-						break;
-					}
-					else
-					{
-						memcpy(temp,sliderBuffer + j + (sliderBuffer[j+1]),strlen(sliderBuffer)-1-(sliderBuffer[j+1]));
-						
-						temp[strlen(temp)-2] = '\0';
-						sliderBuffer[j+(sliderBuffer[j+1])] = '\0';
-						memcpy(sliderBuffer + j + 2,value,strlen(value));
-						sliderBuffer[j+1] = 2 + strlen(value);
-						
-						memcpy(sliderBuffer + j + (sliderBuffer[j+1]),temp,strlen(temp));
-						sliderBuffer[strlen(sliderBuffer)+1] = '\0';
-						break;
-					}
-				}
-				else if(sliderBuffer[j] == 0x00)					
-				{
-					sliderBuffer[0] = sliderBuffer[0] + 1;
-					sliderBuffer[j] = iid;
-					sliderBuffer[j+1] = strlen(value) + 2;
-					memcpy(sliderBuffer + j + 2,value,strlen(value));
-					sliderBuffer[strlen(sliderBuffer)] = '\0';
-					break;
-				}
-				else
-				{
-					j = j + (sliderBuffer[j+1]);
-				}
-				
-			}		
+				sliderBuffer[i][0] = iid;
+				strcpy(sliderBuffer[i]+1,value);
+				break;
+			}
+			else if(sliderBuffer[i][0] == iid)
+			{
+				memset(sliderBuffer[i],0x00,20);
+				sliderBuffer[i][0] = iid;
+				strcpy(sliderBuffer[i]+1,value);
+				break;
+			}
 		}
     
 		memset(readBuffer,0x00,128);
@@ -280,10 +315,10 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		char *ptr,*dls;
 		int pLen,dLen;
 		
-		ptr = strchr(readBuffer+2,P_SEP);
+		ptr = strchr(readBuffer+2,SEPARATOR);
 		ptr++;
 				
-		dls = strchr(ptr,P_SEP);
+		dls = strchr(ptr,SEPARATOR);
 		dls++;
 		if(ptr != NULL)
 		{
@@ -321,25 +356,25 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 	else if(readBuffer[0] == GYRO)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	else if(readBuffer[0] == LAC)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	else if(readBuffer[0] == GRAV)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	else if(readBuffer[0] == GPS)
 	{
 		memset(sensorsBuffer,0x00,64);		
-		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer));
+		memcpy(sensorsBuffer,readBuffer+2,strlen(readBuffer)-2);
 		memset(readBuffer,0x00,128);
 	}
 	
@@ -379,20 +414,33 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 		}
 		memset(readBuffer,0x00,128);
 	}
-	 else if(readBuffer[0] == VERSION)
+	 else if(readBuffer[0] == 0x88)
 	{
-		AndeeAlive= true;		
+		AndeeAlive= true;
+		memset(readBuffer,0x00,128);
+		Serial.println("testing receivers");	
+		return;
 	}
-	
-  } 
-  return;
+	else if(readBuffer[0] == 0x00)
+	{
+		//ignore this state
+	}
+	else
+	{
+		memset(readBuffer,0x00,128);
+		Serial.println("Command not recognised");
+	} 
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                    //
 //                                        Annikken Andee101Class                                         //
 //                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//
 
 void Andee101Class::versionClear()
 {
@@ -407,16 +455,24 @@ void Andee101Class::versionClear()
 
 bool Andee101Class::isConnected()
 {
-	if(AndeeAlive == true)
+	/* if(AndeeAlive == true)
 	{
 		Andee101.sendVersion();
 		AndeeAlive = false;
 	}
-    return AndeeConnected;
+	return AndeeConnected; */
+	
+	
+	return Andee101Peripheral.connected();    
+}
+
+void Andee101Class::broadcast()
+{
+	BLECentral central = Andee101Peripheral.central();
 }
 
 void Andee101Class::resetBLE()
-{		
+{
 	if(resetBLEFlag == false)
 	{
 		
@@ -432,6 +488,7 @@ void Andee101Class::resetBLE()
 
 void Andee101Class::begin()
 {
+	
 	if (nameFlag == 0)
 	{
 		Andee101Peripheral.setLocalName("Andee101");
@@ -445,7 +502,7 @@ void Andee101Class::begin()
 	Andee101Read.setEventHandler(BLEWritten, readBLEBuffer);
 	Andee101Peripheral.setEventHandler(BLEConnected, blePeripheralConnectHandler);
 	Andee101Peripheral.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
-	Andee101Peripheral.begin();	
+	Andee101Peripheral.begin();
 	delay(5);
 	Andee101.broadcast();
 	
@@ -456,9 +513,13 @@ void Andee101Class::begin()
 	memset(sliderBuffer,0x00,64);
 }
 
-void Andee101Class::broadcast()
+
+
+void Andee101Class::poll()
 {
-	BLECentral central = Andee101Peripheral.central();
+	Andee101Peripheral.poll();
+	
+	processReply();
 }
 
 void Andee101Class::setName(const char* name)
@@ -471,7 +532,7 @@ void Andee101Class::setName(const char* name)
 
 void Andee101Class::clear()
 {
-	char msgToPhone[18] = {ASTART, CLEAR, AEND, 0x00, 0x00, 0x00,
+	char msgToPhone[18] = {START_TAG_COMMAND, CLEAR, END_TAG_COMMAND, 0x00, 0x00, 0x00,
 						  0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 						  0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; 	
 	sendToPhone(msgToPhone);
@@ -512,15 +573,15 @@ void Andee101Class::sendVersion(void)
 {
 	char buffer[10];
 	memset(buffer,0x00,10);
-	buffer[0] = ASTART;
-	buffer[1] = VERSION;
-	buffer[2] = P_SEP;
+	buffer[0] = START_TAG_VERSION;
+	buffer[1] = '1';
+	buffer[2] = SEPARATOR;
 	buffer[3] = Andee101Version[0];
 	buffer[4] = Andee101Version[1];
 	buffer[5] = Andee101Version[2];
 	buffer[6] = Andee101Version[3];
 	buffer[7] = Andee101Version[4];
-	buffer[8] = AEND;
+	buffer[8] = END_TAG_VERSION;
 	buffer[9] = '\0';
 	
 	sendToPhone(buffer);
@@ -530,9 +591,9 @@ void Andee101Class::sendVersion(void)
 void Andee101Class::disconnect(void){
     char buffer[4];
     memset(buffer,0x00,4);
-    buffer[0] = ASTART;
+    buffer[0] = START_TAG_COMMAND;
     buffer[1] = DC;
-    buffer[2] = AEND;
+    buffer[2] = END_TAG_COMMAND;
     buffer[3] = '\0';
     
     sendToPhone(buffer);
@@ -544,22 +605,13 @@ void Andee101Class::disconnect(void){
 //                                                                                         //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void Andee101Class::textToSpeech(char accent, float speed, float pitch, char* speech)
+void Andee101Class::textToSpeech(const char* speech, float speed, float pitch, char accent)
 {
 	char buffer[128];
-	sprintf(buffer, "%c%c%c%s%c%.01f%c%.01f%c%c%c", ASTART, TTS, P_SEP, speech, P_SEP, speed, P_SEP, pitch, P_SEP, accent, AEND);
+	sprintf(buffer, "%c%c%c%s%c%.01f%c%.01f%c%c%c", START_TAG_COMMAND, TTS, SEPARATOR, speech, SEPARATOR, speed, SEPARATOR, pitch, SEPARATOR, accent, END_TAG_COMMAND);
 	sendToPhone(buffer);	
 }
 
-void Andee101Class::stopTTS(void)
-{
-	char buffer[20];
-	sprintf(buffer, "%c%c%c|%c0%c0%c0%c", ASTART, TTS, P_SEP,  P_SEP, P_SEP,   P_SEP, AEND);
-    
-
-    sendToPhone(buffer);
-    delay(2);
-}
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                          //
 //                               Control for Smartphone Camera                              //
@@ -570,7 +622,7 @@ void Andee101Class::takePhoto(char cameraType, char autoFocus, char flash)
 {
 	char buffer[11];
 	
-	sprintf(buffer, "%c%c%c%c%c%c%c%c%c", ASTART, CAMERA, P_SEP, cameraType, P_SEP,	autoFocus, P_SEP, flash, AEND);
+	sprintf(buffer, "%c%c%c%c%c%c%c%c%c", START_TAG_COMMAND, CAMERA, SEPARATOR, cameraType, SEPARATOR,	autoFocus, SEPARATOR, flash, END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(2);
 }
@@ -583,7 +635,7 @@ void Andee101Class::takePhoto(char cameraType, char autoFocus, char flash)
 void Andee101Class::gyroInit(int interval, int iteration)
 {
 	char buffer[64];	
-	sprintf(buffer,"%c%c%c%c%d%c%d%c",ASTART,GYRO,'0',P_SEP,interval,P_SEP,iteration,AEND);
+	sprintf(buffer,"%c%c%c%c%d%c%d%c",START_TAG_COMMAND,GYRO,'0',SEPARATOR,interval,SEPARATOR,iteration,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(50);
 }
@@ -591,7 +643,7 @@ void Andee101Class::gyroInit(int interval, int iteration)
 void Andee101Class::gyroStop()
 {
 	char buffer[6];	
-	sprintf(buffer,"%c%c%c%c",ASTART,GYRO,'1',AEND);
+	sprintf(buffer,"%c%c%c%c",START_TAG_COMMAND,GYRO,'1',END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(2);
 }
@@ -611,7 +663,7 @@ void Andee101Class::getGyroReading(float* x,float* y,float* z)
 void Andee101Class::lacInit(int interval, int iteration)
 {
 	char buffer[64];	
-	sprintf(buffer,"%c%c%c%c%d%c%d%c",ASTART,LAC,'0',P_SEP,interval,P_SEP,iteration,AEND);
+	sprintf(buffer,"%c%c%c%c%d%c%d%c",START_TAG_COMMAND,LAC,'0',SEPARATOR,interval,SEPARATOR,iteration,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(50);
 }
@@ -619,7 +671,7 @@ void Andee101Class::lacInit(int interval, int iteration)
 void Andee101Class::lacStop()
 {
 	char buffer[6];	
-	sprintf(buffer,"%c%c%c%c",ASTART,LAC,'1',AEND);
+	sprintf(buffer,"%c%c%c%c",START_TAG_COMMAND,LAC,'1',END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(2);
 }
@@ -639,7 +691,7 @@ void Andee101Class::getLacReading(float* x,float* y,float* z)
 void Andee101Class::gravInit(int interval, int iteration)
 {
 	char buffer[64];	
-	sprintf(buffer,"%c%c%c%c%d%c%d%c",ASTART,GRAV,'0',P_SEP,interval,P_SEP,iteration,AEND);
+	sprintf(buffer,"%c%c%c%c%d%c%d%c",START_TAG_COMMAND,GRAV,'0',SEPARATOR,interval,SEPARATOR,iteration,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(50);
 }
@@ -647,7 +699,7 @@ void Andee101Class::gravInit(int interval, int iteration)
 void Andee101Class::gravStop()
 {
 	char buffer[6];	
-	sprintf(buffer,"%c%c%c%c",ASTART,GRAV,'1',AEND);
+	sprintf(buffer,"%c%c%c%c",START_TAG_COMMAND,GRAV,'1',END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(2);
 }
@@ -666,8 +718,8 @@ void Andee101Class::getGravReading(float* x,float* y,float* z)
 
 void Andee101Class::gpsInit(int interval, int iteration)
 {
-	char buffer[64];	
-	sprintf(buffer,"%c%c%c%c%d%c%d%c",ASTART,GPS,'0',P_SEP,interval,P_SEP,iteration,AEND);
+	char buffer[64];
+	sprintf(buffer,"%c%c%c%c%d%c%d%c",START_TAG_COMMAND,GPS,'0',SEPARATOR,interval,SEPARATOR,iteration,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(50);
 }
@@ -675,7 +727,7 @@ void Andee101Class::gpsInit(int interval, int iteration)
 void Andee101Class::gpsStop()
 {
 	char buffer[6];	
-	sprintf(buffer,"%c%c%c%c",ASTART,GPS,'1',AEND);	
+	sprintf(buffer,"%c%c%c%c",START_TAG_COMMAND,GPS,'1',END_TAG_COMMAND);	
 	sendToPhone(buffer);
 	delay(2);
 }
@@ -695,7 +747,7 @@ void Andee101Class::getGpsReading(float* x,float* y,float* z)
 void Andee101Class::changeScreen(int screen)
 {	
 	char buffer[8];
-	sprintf(buffer,"%c%c%c%c%c%i%c",ASTART,WATCH,P_SEP,'C',P_SEP,screen,AEND);	
+	sprintf(buffer,"%c%c%c%c%c%i%c",START_TAG_UIXYWH,WATCH,SEPARATOR,'C',SEPARATOR,screen,END_TAG_UIXYWH);	
 	buffer[7] = '\0';
 	sendToPhone(buffer);
 	delay(2);
@@ -704,7 +756,7 @@ void Andee101Class::changeScreen(int screen)
 void Andee101Class::showScreen()
 {
 	char buffer[6];
-	sprintf(buffer,"%c%c%c%c%c",ASTART,WATCH,P_SEP,'S',AEND);
+	sprintf(buffer,"%c%c%c%c%c",START_TAG_UIXYWH,WATCH,SEPARATOR,'S',END_TAG_UIXYWH);
 	buffer[5] = '\0';
 	sendToPhone(buffer);
 	delay(2);
@@ -712,7 +764,7 @@ void Andee101Class::showScreen()
 
 void Andee101Class::hideScreen()
 {
-	char buffer[6] = {ASTART,WATCH,P_SEP,'H',AEND};
+	char buffer[6] = {START_TAG_UIXYWH,WATCH,SEPARATOR,'H',END_TAG_UIXYWH};
 	buffer[5] = '\0';
 	sendToPhone(buffer);
 	delay(2);
@@ -720,16 +772,16 @@ void Andee101Class::hideScreen()
 
 void Andee101Class::textInput()
 {
-	char buffer[6] = {ASTART,WATCH,P_SEP,'X',AEND};
+	char buffer[6] = {START_TAG_UIXYWH,WATCH,SEPARATOR,'X',END_TAG_UIXYWH};
 	buffer[5] = '\0';
 	sendToPhone(buffer);
 	delay(2);
 }
 
-void Andee101Class::sendSMS(char* number,char* message)
+void Andee101Class::sendSMS(const char* number,const char* message)
 {
 	char buffer[64];
-	sprintf(buffer,"%c%c%c%s%c%s%c",ASTART,SMS,P_SEP,number,P_SEP,message,AEND);
+	sprintf(buffer,"%c%c%c%s%c%s%c",START_TAG_COMMAND,SMS,SEPARATOR,number,SEPARATOR,message,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(2);
 }
@@ -737,10 +789,12 @@ void Andee101Class::sendSMS(char* number,char* message)
 void Andee101Class::vibrate()
 {
 	char buffer[5];
-	sprintf(buffer,"%c%c%c",ASTART,VIBRATE,AEND);
+	sprintf(buffer,"%c%c%c",START_TAG_COMMAND,VIBRATE,END_TAG_COMMAND);
 	sendToPhone(buffer);
 	delay(2);
 }
+
+
 
 
 
@@ -759,16 +813,18 @@ void Andee101Helper::setId(int value)
 {
 	id = value + 32;
 	
-	sprintf(dataBuffer,"%s"," ");
-	sprintf(titleBuffer,"%s"," ");
-	sprintf(unitBuffer,"%s"," ");
-	sprintf(titleBGBuffer,"%s","FF00FF00");
-	sprintf(titleFontBuffer,"%s","FFFF0000");
-	sprintf(bodyFontBuffer,"%s","FF0000FF");
-	sprintf(bodyBGBuffer,"%s","FF83A4C8");
-	sprintf(maxBuffer,"%s"," ");
-	sprintf(minBuffer,"%s"," ");
-	inputBuffer = '0';
+	sprintf(dataBuffer,"%c%c%c%c",0x20,0x20,0x20,0x20);
+	sprintf(titleBuffer,"%c%c%c%c",0x20,0x20,0x20,0x20);
+	sprintf(unitBuffer,"%c%c%c%c",0x20,0x20,0x20,0x20);
+	
+	convertColor("FF00FF00",titleBGBuffer);
+	convertColor("FFFF0000",titleFontBuffer);
+	convertColor("FF0000FF",bodyFontBuffer);
+	convertColor("FF83A4C8",bodyBGBuffer);	
+	
+	sprintf(maxBuffer,"%s","   ");
+	sprintf(minBuffer,"%s","   ");
+	inputTypeBuffer = '0';
 	subBuffer = '0';
 	flashBuffer = '0';		
 	
@@ -798,69 +854,59 @@ void Andee101Helper::setType(char type)
 {
 	if(type == DATA_OUT)
 	{
-		sprintf(bleBuffer , "%c%c", (ASTART), (DATA_OUT));
-		subBuffer = '0';
+		sprintf(bleBuffer , "%c%c", (START_TAG_UIXYWH), (DATA_OUT));
 	}
 	else if(type == DATA_OUT_CIRCLE)
 	{		
-		sprintf(bleBuffer, "%c%c",ASTART,DATA_OUT);
-		subBuffer = '1';
+		sprintf(bleBuffer, "%c%c",START_TAG_UIXYWH,DATA_OUT_CIRCLE);
 	}
 	else if(type == DATA_OUT_HEADER)
 	{		
-		sprintf(bleBuffer, "%c%c",ASTART,DATA_OUT);
-		subBuffer = '2';
+		sprintf(bleBuffer, "%c%c",START_TAG_UIXYWH,DATA_OUT_HEADER);
 	}
 	
 	else if(type == BUTTON_IN)
 	{		
-		sprintf(bleBuffer, "%c%c",ASTART,BUTTON_IN);
-		subBuffer = '0';
+		sprintf(bleBuffer, "%c%c",START_TAG_UIXYWH,BUTTON_IN);
 	}
 	else if(type == CIRCLE_BUTTON)
 	{		
-		sprintf(bleBuffer, "%c%c",ASTART,BUTTON_IN);
-		subBuffer = '1';
+		sprintf(bleBuffer, "%c%c",START_TAG_UIXYWH,CIRCLE_BUTTON);
 	}
 	
 	else if(type == ANALOG_DIAL_OUT)
 	{
-		sprintf(bleBuffer,"%c%c", ASTART, ANALOG_DIAL_OUT);
+		sprintf(bleBuffer,"%c%c", START_TAG_UIXYWH, ANALOG_DIAL_OUT);
 	}
 	
 	else if(type == KEYBOARD_IN)
 	{		
-		sprintf(bleBuffer, "%c%c", ASTART, KEYBOARD_IN);
+		sprintf(bleBuffer, "%c%c", START_TAG_UIXYWH, KEYBOARD_IN);
 	}
 	
 	else if(type == DATE_IN)
 	{
-		sprintf(bleBuffer, "%c%c", ASTART, DATE_IN);
+		sprintf(bleBuffer, "%c%c", START_TAG_UIXYWH, DATE_IN);
 	}
 	
 	else if(type == TIME_IN)
 	{
-		sprintf(bleBuffer,"%c%c", ASTART, TIME_IN);
+		sprintf(bleBuffer,"%c%c", START_TAG_UIXYWH, TIME_IN);
 	}
 	
 	else if(type == SLIDER_IN)
 	{
-		sprintf(bleBuffer, "%c%c", ASTART,SLIDER_IN);
-	}	
-	
-	else if (type == TTS)
-	{
-		sprintf(bleBuffer, "%c%c", ASTART, TTS);
-	}		
+		sprintf(bleBuffer, "%c%c", START_TAG_UIXYWH,SLIDER_IN);
+	}				
 	
 	else if (type == JOYSTICK)
 	{
-		sprintf(bleBuffer,"%c%c", ASTART,JOYSTICK);
+		sprintf(bleBuffer,"%c%c", START_TAG_UIXYWH,JOYSTICK);
 	}
 	
 	else if (type == WATCH)
 	{
-		sprintf(bleBuffer,"%c%c", ASTART,WATCH);
+		sprintf(bleBuffer,"%c%c", START_TAG_UIXYWH,WATCH);
 	}
 
 	else
@@ -868,39 +914,53 @@ void Andee101Helper::setType(char type)
 		
 	}
 }
-void Andee101Helper::setCoord(float x, float y, float w, float h)
+void Andee101Helper::setCoord(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 	if(x > C_HLIMIT)
-        x = C_HLIMIT;
+	{
+		x = C_HLIMIT;
+	}        
     else if(x < C_LLIMIT)
-        x = C_LLIMIT;
-    
-    if(y > C_HLIMIT)
-        y = C_HLIMIT;
+	{
+		 x = C_LLIMIT;
+	}
+	
+	
+	if(y > C_HLIMIT)
+	{
+		y = C_HLIMIT;
+	}        
     else if(y < C_LLIMIT)
-        y = C_LLIMIT;
-    
-    
-    if(w > C_HLIMIT)
-        w = C_HLIMIT;
+	{
+		 y = C_LLIMIT;
+	}
+	
+	
+	if(w > C_HLIMIT)
+	{
+		w = C_HLIMIT;
+	}        
     else if(w < C_LLIMIT)
-        w = C_LLIMIT;
-    
-    
-    if(h > C_HLIMIT)
-        h = C_HLIMIT;
+	{
+		 w = C_LLIMIT;
+	}
+	
+	
+	if(h > C_HLIMIT)
+	{
+		h = C_HLIMIT;
+	}        
     else if(h < C_LLIMIT)
-        h = C_LLIMIT;
-	
-	x = ((x/200)*400) + 32;
-	y = ((y/200)*400) + 32;	
-	w = ((w/200)*400) + 32;	
-	h = ((h/200)*400) + 32;
-	
-
+	{
+		 h = C_LLIMIT;
+	}
 		
-	memset(xywhBuffer,0x00,13);
-	sprintf(xywhBuffer, "%03i%03i%03i%03i", (int)x, (int)y, (int)w, (int)h);
+	memset(xywhBuffer,0x00,5);
+	xywhBuffer[0] = x+32;
+	xywhBuffer[1] = y+32;
+	xywhBuffer[2] = w+32;
+	xywhBuffer[3] = h+32;
+	//sprintf(xywhBuffer, "%02u%02u%02u%03u", x, y, w, h);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -912,10 +972,10 @@ void Andee101Helper::setCoord(float x, float y, float w, float h)
 void Andee101Helper::setInputMode(char type)
 {
 	if(type < 32)
-		inputBuffer = type + 48;
+		inputTypeBuffer = type + 48;
 	
 	else
-		inputBuffer = type;
+		inputTypeBuffer = type;
 	
 }
 
@@ -936,80 +996,54 @@ void Andee101Helper::setSubType(char type)
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
+
+
 void Andee101Helper::setTitleColor(const char* color)
 {
-	
-	memset(titleBGBuffer,0x00,9);
-	if(strlen(color) == 6)
-	{
-		sprintf(titleBGBuffer,"FF%s",color);
-	}
-	else
-	{
-		sprintf(titleBGBuffer, "%s", color);
-	}
+	memset(titleBGBuffer,0x00,5);
+	convertColor(color,titleBGBuffer);	
 }
-void Andee101Helper::setTitleColor(const char color)
-{	
-	memset(titleBGBuffer,0x00,9);	
-	sprintf(titleBGBuffer, "%s", &color);
+void Andee101Helper::setTitleColor(char* color)
+{
+	memset(titleBGBuffer,0x00,5);
+	convertColor(color,titleBGBuffer);	
 }
+
 
 
 void Andee101Helper::setTitleTextColor(const char* color)
-{		
-	memset(titleFontBuffer,0x00,9);
-	if(strlen(color) == 6)
-	{
-		sprintf(titleFontBuffer, "FF%s", color);
-	}
-	else
-	{
-		sprintf(titleFontBuffer, "%s", color);
-	}
-}
-void Andee101Helper::setTitleTextColor(const char color)
 {
-	memset(titleFontBuffer,0x00,9);
-	sprintf(titleFontBuffer, "%s", &color);
+	memset(titleFontBuffer,0x00,5);
+	convertColor(color,titleFontBuffer);
+}
+void Andee101Helper::setTitleTextColor(char* color)
+{
+	memset(titleFontBuffer,0x00,5);
+	convertColor(color,titleFontBuffer);
 }
 
 
- void Andee101Helper::setColor(const char* color)
+void Andee101Helper::setColor(const char* color)
 {
-	memset(bodyBGBuffer,0x00,9);
-	if(strlen(color) == 6)
-	{
-		sprintf(bodyBGBuffer, "FF%s", color);
-	}
-	else
-	{
-		sprintf(bodyBGBuffer, "%s", color);
-	}
+	memset(bodyBGBuffer,0x00,5);
+	convertColor(color,bodyBGBuffer);
 } 
-void Andee101Helper::setColor(const char color)
+void Andee101Helper::setColor(char* color)
 {
-	memset(bodyBGBuffer,0x00,9);	
-	sprintf(bodyBGBuffer, "%s", &color);
-}
+	memset(bodyBGBuffer,0x00,5);
+	convertColor(color,bodyBGBuffer);
+} 
 
 
 void Andee101Helper::setTextColor(const char* color)
 {
-	memset(bodyFontBuffer,0x00,9);
-	if(strlen(color) == 6)
-	{
-		sprintf(bodyFontBuffer, "FF%s", color);
-	}
-	else
-	{
-		sprintf(bodyFontBuffer, "%s", color);
-	}
+	memset(bodyFontBuffer,0x00,5);
+	convertColor(color,bodyFontBuffer);
 } 
-void Andee101Helper::setTextColor(const char color)
+void Andee101Helper::setTextColor(char* color)
 {
-	memset(bodyFontBuffer,0x00,9);	
-	sprintf(bodyFontBuffer, "%s", &color);
+	memset(bodyFontBuffer,0x00,5);
+	convertColor(color,bodyFontBuffer);
 } 
 
 //////////////////////////////////////////////////////////////////////
@@ -1020,11 +1054,11 @@ void Andee101Helper::setTextColor(const char color)
 
 void Andee101Helper::setData(const char* data)
 {
-	memset(dataBuffer,0x00,64);
-	if(data == 0x00)
-		{
-			data = " ";
-		}	
+	memset(dataBuffer,0x00,64);		
+	if(strlen(data) <= 0)
+	{
+		data = "     ";
+	}
     sprintf(dataBuffer, "%s", data);
 }
 
@@ -1050,10 +1084,10 @@ void Andee101Helper::setData(double data,char decPlace)
 
 void Andee101Helper::setTitle(const char* title)
 {
-	memset(titleBuffer,0x00,64);
-	if(title == 0x00)
+	memset(titleBuffer,0x00,64);	
+	if(strlen(title) <= 0)
 	{
-		title = " ";
+		title = "     ";
 	}
 	sprintf(titleBuffer, "%s", title);
 }
@@ -1080,11 +1114,10 @@ void Andee101Helper::setTitle(double title, char decPlace)
 
 void Andee101Helper::setUnit(const char* unit)
 {
-	memset(unitBuffer,0x00,64);
-    
-	if(unit == 0x00)
+	memset(unitBuffer,0x00,64);    
+	if(strlen(unit) <= 0)
 	{
-		unit = " ";
+		unit = "     ";
 	}
 	sprintf(unitBuffer, "%s", unit);
 }
@@ -1139,12 +1172,11 @@ void Andee101Helper::setMinMax(double min,double max,char decPlace)
 
 /* void Andee101Helper::setKeyboardType(char type)
 {
-	inputBuffer = type;
+	inputTypeBuffer = type;
 } */
 
 void Andee101Helper::getKeyboardMessage(char* message)
 {	
-	phoneBuffer[(strlen(phoneBuffer)-1)] = '\0';
 	sprintf(message,"%s", phoneBuffer);
 	return;	
 }
@@ -1200,7 +1232,7 @@ int Andee101Helper::isPressed(void)
 				flashBuffer = buttonBuffer[pos+1];
 				buttonBuffer[pos+1] = 0x30;				
 				
-				if(inputBuffer == 48)
+				if(inputTypeBuffer == 48)
 				{
 					return '1';
 				}
@@ -1215,19 +1247,18 @@ int Andee101Helper::isPressed(void)
 	return 0;
 }
  void Andee101Helper::ack(void)
-{
-	 
+{	 
 	if(bleBuffer[1] == BUTTON_IN)
 	{
-		if(inputBuffer == '0')
+		if(inputTypeBuffer == '0')
 		{
 			char* buffer = new char[18];
-			buffer[0] = AEND;
-			buffer[1] = ASTART;
+			buffer[0] = END_TAG_UIXYWH;
+			buffer[1] = START_TAG_UIXYWH;
 			buffer[2] = ACKN;
-			buffer[3] = P_SEP;
+			buffer[3] = SEPARATOR;
 			buffer[4] = id;
-			buffer[5] = AEND;
+			buffer[5] = END_TAG_UIXYWH;
 			for(int l = 6; l < 18; l++)
 			{
 				buffer[l] = 0x00;
@@ -1239,12 +1270,12 @@ int Andee101Helper::isPressed(void)
 	else
 	{
 		char* buffer = new char[18];
-			buffer[0] = AEND;
-			buffer[1] = ASTART;
+			buffer[0] = END_TAG_UIXYWH;
+			buffer[1] = START_TAG_UIXYWH;
 			buffer[2] = ACKN;
-			buffer[3] = P_SEP;
+			buffer[3] = SEPARATOR;
 			buffer[4] = id;
-			buffer[5] = AEND;
+			buffer[5] = END_TAG_UIXYWH;
 			for(int l = 6; l < 18; l++)
 			{
 				buffer[l] = 0x00;
@@ -1271,50 +1302,48 @@ void Andee101Helper::setSliderInitialValue(int value)
 {
 	sprintf(dataBuffer,"%d",value);
 	sprintf(tempBuffer,"%d",value);
+	flashBuffer = '1';
 }
 
 void Andee101Helper::setSliderInitialValue(float value,char decPlace)
 {
 	dtostrf(value,3,decPlace,dataBuffer);
 	dtostrf(value,3,decPlace,tempBuffer);
+	flashBuffer = '1';
 }
 void Andee101Helper::setSliderInitialValue(double value,char decPlace)
 {
 	dtostrf(value,3,decPlace,dataBuffer);
 	dtostrf(value,3,decPlace,tempBuffer);
+	flashBuffer = '1';
 }
 
-
-
-void Andee101Helper::setSliderNumIntervals(int numInterval)
+void Andee101Helper::setSliderNumIntervals(char numInterval)
 {
-	sprintf(unitBuffer,"%d",numInterval);
+	if(numInterval < 223)
+	{
+		subBuffer = numInterval + 32;
+	}
+	else
+	{
+		subBuffer = numInterval;
+	}
 }
-
-
-void Andee101Helper::moveSliderToValue(int value)
-{
-	flashBuffer = (char)value;
-}
-
-
 
 void Andee101Helper::getSliderValue(int* x)
 {	
-	char buffer[12];
-	memset(buffer,0x00,12);
-	for(unsigned int i = 1; i < strlen(sliderBuffer); )
+	char buffer[20];
+	unsigned int i = 0;
+	memset(buffer,0x00,20);
+	
+	for(i = 0; i < MAXSLIDER; i++)
 	{
-		if(sliderBuffer[i] == id)
+		if(sliderBuffer[i][0] == id)
 		{
-			memcpy(buffer, sliderBuffer + 2 + i, (sliderBuffer[i+1]-2));
-			break;
-		}
-		else
-		{
-			i = i + (sliderBuffer[i+1]);
+			strcpy(buffer,sliderBuffer[i] + 1);			
 		}
 	}
+	
 	if(buffer[0] == 0x00)
 	{
 		*x = atoi(tempBuffer);
@@ -1328,18 +1357,14 @@ void Andee101Helper::getSliderValue(int* x)
 
 void Andee101Helper::getSliderValue(float* f)
 {
-	char buffer[12];
-	memset(buffer,0x00,12);
-	for(unsigned int i = 1; i < strlen(sliderBuffer); )
+	char buffer[20];
+	unsigned int i = 0;
+	memset(buffer,0x00,20);
+	for(i = 0; i < MAXSLIDER; i++)
 	{
-		if(sliderBuffer[i] == id)
+		if(sliderBuffer[i][0] == id)
 		{
-			memcpy(buffer, sliderBuffer + 2 + i, (sliderBuffer[i+1]-2));
-			break;
-		}
-		else
-		{
-			i = i + (sliderBuffer[i+1]);
+			strcpy(buffer,sliderBuffer[i] + 1);
 		}
 	}
 	if(buffer[0] == 0x00)
@@ -1354,18 +1379,14 @@ void Andee101Helper::getSliderValue(float* f)
 
 void Andee101Helper::getSliderValue(double* d)
 {
-	char buffer[12];
-	memset(buffer,0x00,12);
-	for(unsigned int i = 1; i < strlen(sliderBuffer); )
+	char buffer[20];
+	unsigned int i = 0;
+	memset(buffer,0x00,20);
+	for(i = 0; i < MAXSLIDER; i++)
 	{
-		if(sliderBuffer[i] == id)
+		if(sliderBuffer[i][0] == id)
 		{
-			memcpy(buffer, sliderBuffer + 2 + i, (sliderBuffer[i+1]-2));
-			break;
-		}
-		else
-		{
-			i = i + (sliderBuffer[i+1]);
+			strcpy(buffer,sliderBuffer[i] + 1);
 		}
 	}
 	if(buffer[0] == 0x00)
@@ -1415,18 +1436,34 @@ void Andee101Helper::getJoystick(int* x,int* y)
 void Andee101Helper::update(void)
 {
 	Andee101.versionClear();
-	Andee101.resetBLE();
-	Andee101.isConnected();
+	//Andee101.isConnected();
 	
 	if(bleBuffer[1] == DATA_OUT)	
 	{
-		sprintf(bleBuffer , "%c%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c", (ASTART),(DATA_OUT),subBuffer,(id), xywhBuffer,(inputBuffer),P_SEP,titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer,P_SEP,	titleBuffer,P_SEP,unitBuffer,P_SEP,dataBuffer,(AEND));
+		sprintf(bleBuffer , "%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c", (START_TAG_UIXYWH),(DATA_OUT),(id), xywhBuffer,'0',SEPARATOR,titleBGBuffer,titleFontBuffer,bodyBGBuffer,bodyFontBuffer,SEPARATOR,	titleBuffer,SEPARATOR,unitBuffer,SEPARATOR,dataBuffer,(END_TAG_UIXYWH));
 	}
+	else if(bleBuffer[1] == DATA_OUT_CIRCLE)	
+	{
+		sprintf(bleBuffer , "%c%c%c%s%c%c%s%s%s%c%s%c%s%c%s%c", (START_TAG_UIXYWH),(DATA_OUT_CIRCLE),(id), xywhBuffer,'0',SEPARATOR,titleFontBuffer,bodyBGBuffer,bodyFontBuffer,SEPARATOR,titleBuffer,SEPARATOR,unitBuffer,SEPARATOR,dataBuffer,(END_TAG_UIXYWH));
+	}
+	else if(bleBuffer[1] == DATA_OUT_HEADER)	
+	{
+		sprintf(bleBuffer , "%c%c%c%s%c%c%s%s%c%s%c", (START_TAG_UIXYWH),(DATA_OUT_HEADER),(id), xywhBuffer,'0',SEPARATOR,bodyBGBuffer,bodyFontBuffer,SEPARATOR,titleBuffer,(END_TAG_UIXYWH));
+	}
+	
 	
 	else if(bleBuffer[1] == BUTTON_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%c%s%c",ASTART,BUTTON_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,bodyBGBuffer,bodyFontBuffer,P_SEP,titleBuffer,AEND);
+		memcpy(titleBGBuffer,bodyBGBuffer,5);
+		memcpy(titleFontBuffer,bodyFontBuffer,5);
+		sprintf(bleBuffer, "%c%c%c%s%c%c%s%s%c%s%c",START_TAG_UIXYWH,BUTTON_IN, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,titleFontBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
 	}
+	else if(bleBuffer[1] == CIRCLE_BUTTON)
+	{
+		sprintf(bleBuffer, "%c%c%c%s%c%c%s%s%c%s%c",START_TAG_UIXYWH,CIRCLE_BUTTON, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,titleFontBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
+	}
+	
+	
 	
 	else if(bleBuffer[1] == ANALOG_DIAL_OUT)
 	{
@@ -1438,123 +1475,49 @@ void Andee101Helper::update(void)
 		{
 			sprintf(minBuffer,"%c",'0');
 		}
-		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c", ASTART, ANALOG_DIAL_OUT,subBuffer, id, xywhBuffer,inputBuffer, P_SEP, titleBGBuffer,bodyBGBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer,P_SEP, dataBuffer, P_SEP, maxBuffer, P_SEP, minBuffer, AEND);
+		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c", START_TAG_UIXYWH, ANALOG_DIAL_OUT, id, xywhBuffer,'0', SEPARATOR, titleBGBuffer,bodyBGBuffer, SEPARATOR, titleBuffer, SEPARATOR, unitBuffer,SEPARATOR, dataBuffer, SEPARATOR, maxBuffer, SEPARATOR, minBuffer, END_TAG_UIXYWH);
 	}	
+	
 	
 	else if(bleBuffer[1] == KEYBOARD_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%c%s%c%s%c", ASTART, KEYBOARD_IN,subBuffer, id, xywhBuffer, inputBuffer,P_SEP, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, dataBuffer, AEND);
+		sprintf(bleBuffer, "%c%c%c%s%c%c%s%c%s%c%s%c", START_TAG_UIXYWH, KEYBOARD_IN, id, xywhBuffer, inputTypeBuffer,SEPARATOR, titleFontBuffer, SEPARATOR, titleBuffer, SEPARATOR, dataBuffer, END_TAG_UIXYWH);
 	}
 	
 	else if(bleBuffer[1] == DATE_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%c%s%c%s%c", ASTART, DATE_IN, subBuffer, id,xywhBuffer, inputBuffer,P_SEP, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, dataBuffer, AEND);
+		sprintf(bleBuffer, "%c%c%c%s%c%c%s%c%s%c%s%c", START_TAG_UIXYWH, DATE_IN,  id,xywhBuffer, inputTypeBuffer,SEPARATOR, titleFontBuffer, SEPARATOR, titleBuffer, SEPARATOR, dataBuffer, END_TAG_UIXYWH);
 	}
 	
 	else if(bleBuffer[1] == TIME_IN)
 	{
-		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%c%s%c%s%c", ASTART, TIME_IN,subBuffer,  id,xywhBuffer, inputBuffer,P_SEP, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, dataBuffer, AEND);
+		sprintf(bleBuffer,"%c%c%c%s%c%c%s%c%s%c%s%c", START_TAG_UIXYWH, TIME_IN,  id,xywhBuffer, inputTypeBuffer,SEPARATOR, titleFontBuffer, SEPARATOR, titleBuffer, SEPARATOR, dataBuffer, END_TAG_UIXYWH);
 	}
 	
 	else if(bleBuffer[1] == SLIDER_IN)
 	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", ASTART,SLIDER_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,titleBGBuffer,bodyBGBuffer,P_SEP,titleBuffer,P_SEP,dataBuffer,P_SEP,maxBuffer,P_SEP,minBuffer,P_SEP,unitBuffer,P_SEP,flashBuffer,AEND);
+		sprintf(bleBuffer, "%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%c%c%c%c", START_TAG_UIXYWH,SLIDER_IN, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,SEPARATOR,dataBuffer,SEPARATOR,maxBuffer,SEPARATOR,minBuffer,SEPARATOR,subBuffer,SEPARATOR,flashBuffer,END_TAG_UIXYWH);
 	}	
-	
-	else if(bleBuffer[1] == TTS)
-	{
-		sprintf(bleBuffer, "%c%c%c%s%c%s%c%s%c%c%c", ASTART, TTS, P_SEP, dataBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer, P_SEP, inputBuffer, AEND);
-	}
 	
 	else if(bleBuffer[1] == JOYSTICK)
 	{
-		sprintf(bleBuffer,"%c%c%c%c%s%c%c%s%s%s%c%s%c", ASTART,JOYSTICK,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,	titleBGBuffer,titleFontBuffer,bodyBGBuffer,P_SEP,titleBuffer,AEND);
+		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%s%c%s%c", START_TAG_UIXYWH,JOYSTICK, id,xywhBuffer,inputTypeBuffer,SEPARATOR,	titleBGBuffer,titleFontBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
 	}
 	
 	else if(bleBuffer[1] == WATCH)
 	{
-		sprintf(bleBuffer,"%c%c%c%c%c%s%s%c%s%c", ASTART,WATCH,P_SEP,watchBuffer,P_SEP,titleBGBuffer,titleFontBuffer,P_SEP,titleBuffer,AEND);
+		sprintf(bleBuffer,"%c%c%c%c%c%s%s%c%s%c", START_TAG_UIXYWH,WATCH,SEPARATOR,watchBuffer,SEPARATOR,titleBGBuffer,titleFontBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
 	}
-	printHEX(bleBuffer);
+	
+	//printHEX(bleBuffer);
 	sendToPhone(bleBuffer);
-	delay(2);
-	
-	
+	delay(5);
 }
-
-void Andee101Helper::updateData(char* string)
-{
-	char* tempBuffer = new char[64];
-	tempBuffer = string;
-	if(bleBuffer[1] == DATA_OUT)
-	{
-		sprintf(bleBuffer , "%c%c%c%s%c%c%s%s%s%s%c%s%c%s%c%s%c", (ASTART), (DATA_OUT), (id), xywhBuffer,(inputBuffer),P_SEP,titleFontBuffer,titleBGBuffer,bodyFontBuffer,bodyBGBuffer,P_SEP,titleBuffer,P_SEP,unitBuffer,P_SEP,tempBuffer,(AEND));
-	}
-	
-	else if(bleBuffer[1] == BUTTON_IN)
-	{
-		sprintf(bleBuffer, "%c%c%c%s%c%c%s%c%s%c",ASTART,BUTTON_IN, id,xywhBuffer,inputBuffer,P_SEP,bodyBGBuffer,P_SEP,titleBuffer,AEND);
-	}
-	
-	else if(bleBuffer[1] == ANALOG_DIAL_OUT)
-	{
-		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c%s%c%s%c", ASTART, ANALOG_DIAL_OUT, id, xywhBuffer,inputBuffer, P_SEP, titleBGBuffer, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer,	P_SEP, tempBuffer, P_SEP, maxBuffer, P_SEP, minBuffer, AEND);
-	}
-	
-	else if(bleBuffer[1] == KEYBOARD_IN)
-	{		
-		sprintf(bleBuffer, "%c%c%c%s%c%c%s%c%s%c%s%c", ASTART, KEYBOARD_IN, id, xywhBuffer, inputBuffer,P_SEP, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, tempBuffer, AEND);
-	}
-	
-	else if(bleBuffer[1] == DATE_IN)
-	{
-		sprintf(bleBuffer, "%c%c%c%s%c%c%s%c%s%c%s%c", ASTART, DATE_IN, id, xywhBuffer, inputBuffer,P_SEP, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, tempBuffer, AEND);
-	}
-	
-	else if(bleBuffer[1] == TIME_IN)
-	{
-		sprintf(bleBuffer,"%c%c%c%s%c%c%s%c%s%c%s%c", ASTART, TIME_IN, id, xywhBuffer, inputBuffer,P_SEP, bodyBGBuffer, P_SEP, titleBuffer, P_SEP, tempBuffer, AEND);
-	}
-	
-	else if(bleBuffer[1] == SLIDER_IN)
-	{
-		sprintf(bleBuffer, "%c%c%c%c%s%c%c%s%s%s%c%s%c%s%c%s%c%s%c%s%c%c%c", ASTART,SLIDER_IN,subBuffer, id,xywhBuffer,inputBuffer,P_SEP,titleFontBuffer,titleBGBuffer,bodyBGBuffer,P_SEP,titleBuffer,P_SEP,tempBuffer,P_SEP,maxBuffer,P_SEP,minBuffer,P_SEP,unitBuffer,
-				P_SEP,subBuffer,AEND);
-	}	
-	
-	else if(bleBuffer[1] == TTS)
-	{
-		sprintf(bleBuffer, "%c%c%c%s%c%s%c%s%c%c%c", ASTART, TTS, P_SEP, tempBuffer, P_SEP, titleBuffer, P_SEP, unitBuffer, P_SEP, inputBuffer, AEND);
-	}
-	 
-	sendToPhone(bleBuffer);
-	delay(2);
-}
-
-void Andee101Helper::updateData(int data)
-{
-	char buffer[24];
-	sprintf(buffer,"%d",data);
-	updateData(buffer);	
-}
-void Andee101Helper::updateData(float data,char decPlace)
-{
-	char buffer[24];
-	dtostrf(data,3,decPlace,buffer);
-	updateData(buffer);	
-}
-void Andee101Helper::updateData(double data,char decPlace)
-{
-	char buffer[24];
-	dtostrf(data,3,decPlace,buffer);
-	updateData(buffer);	
-}
-
 
 
 void Andee101Helper::remove()
 {
-	char removeUI[6] = {ASTART, REMOVE, P_SEP, (char)id, AEND, 0x00};
+	char removeUI[6] = {START_TAG_UIXYWH, REMOVE, SEPARATOR, (char)id, END_TAG_UIXYWH, 0x00};
 	
 	sendToPhone(removeUI);
 	delay(2);

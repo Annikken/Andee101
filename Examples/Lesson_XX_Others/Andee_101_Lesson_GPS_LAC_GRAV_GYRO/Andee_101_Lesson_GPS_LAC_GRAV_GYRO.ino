@@ -2,10 +2,6 @@
   [ Andee - with Arduino/Genuino 101 ]
   ================ 
   Displaying Gyroscope, Linear Acceleration, Gravity and GPS Values from the Smartdevice!
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -108,21 +104,25 @@ void setInitialData()
 
 // Arduino will run instructions here repeatedly until you power it off.
 void loop() {
-
+  Andee101.poll();//required in every Andee101 sketch
   if (refreshUI == 0 && Andee101.isConnected() == true)//If the UI has not been updated and the Andee101 is connected
   {
-    gyro.update();//Each UI object has to be updated to appear in the smartdevice
-    grav.update();
-    lac.update();
-    gps.update();
-    xDisp.update();
-    yDisp.update();
-    zDisp.update();
+    for(int k = 0;k<3;k++)
+    {
+      gyro.update();//Each UI object has to be updated to appear in the smartdevice
+      grav.update();
+      lac.update();
+      gps.update();
+      delay(100);//delay is needed or else Arduino 101 will be crash
+      xDisp.update();
+      yDisp.update();
+      zDisp.update();
+      delay(100);
+    }    
     refreshUI = 1;//This shows that the UI has been updated
   }
   else if (refreshUI == 1 && AndeeConnected == 0) //If the UI has been updated but the Andee101 is not connected
   {
-    Andee101.clear();//Clear the screen of the smartdevice on the next reconnect
     refreshUI = 0;
   }
 
@@ -170,13 +170,14 @@ void loop() {
     xDisp.update();
     yDisp.update();
     zDisp.update();
-    delay(50);
+    delay(100);
   }
   else// if gravState is LOW
   {
     grav.setTitle("Grav Sensor On");//change the title of the button
     grav.setColor(GREEN);//change the colour of the button
     grav.update();//update the grav UI
+    delay(100);
   }
 
   //////////////////////This is the control for the Gyroscope sensor//////////////////////////////////////////////////////
@@ -212,13 +213,14 @@ void loop() {
     yDisp.update();
     zDisp.update();
     gyro.update();
-    delay(10);
+    delay(100);
   }
   else
   {
     gyro.setTitle("Gyro Sensor On");
     gyro.setColor(GREEN);
     gyro.update();
+    delay(100);
   }
 
   //////////////////////////This is the control for the LAC(Linear Acceleration) sensor/////////////////////////////////////////
@@ -254,13 +256,14 @@ void loop() {
     yDisp.update();
     zDisp.update();
     lac.update();
-    delay(10);
+    delay(100);
   }
   else
   {
     lac.setTitle("LAC Sensor On");
     lac.setColor(GREEN);
     lac.update();
+    delay(100);
   }
 
   /////////////////////////////This is the control for the GPS sensor///////////////////////////////////////////////
@@ -296,13 +299,14 @@ void loop() {
     yDisp.update();
     zDisp.update();
     gps.update();
-    delay(10);
+    delay(100);
   }
   else
   {
     gps.setTitle("Gps Sensor On");
     gps.setColor(GREEN);
     gps.update();
+    delay(100);
   }
 }
 

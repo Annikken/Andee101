@@ -3,10 +3,6 @@
   ================
   Lesson 02d
   Use Button to Control RGB LED
-  
-  Check out our Resources section for more information and 
-  ideas on what you can do with the Annikken Andee!
-  http://resources.annikken.com
 
   Contact us at andee@annikken.com if there are 
   bugs in this sketch or if you need help with the 
@@ -52,7 +48,6 @@ void setup()
 {
   Andee101.begin();  // Setup communication between Annikken Andee101 and Arduino
   setInitialData(); // Define object types and their appearance
-  Serial.begin(9600);
   pinMode(pinR, OUTPUT); // Set pins to output mode
   pinMode(pinG, OUTPUT);
   pinMode(pinB, OUTPUT);
@@ -77,6 +72,7 @@ void setInitialData()
   buttonRup.setCoord(0,25,33,20);
   buttonRup.setTitle("R +");
   buttonRup.setColor(RED); // Set button to red
+  buttonRup.setTextColor(WHITE);
   buttonRup.setInputMode(NO_ACK); // You need this line to allow for multiple button presses
 
   buttonRdown.setId(2); // Button to decrease red level
@@ -84,6 +80,7 @@ void setInitialData()
   buttonRdown.setCoord(0,50,33,20);
   buttonRdown.setTitle("R -");
   buttonRdown.setColor(RED); // Set button to red
+  buttonRdown.setTextColor(WHITE);
   buttonRdown.setInputMode(NO_ACK); // You need this line to allow for multiple button presses
 
   buttonGup.setId(3); // Button to increase green level
@@ -91,6 +88,7 @@ void setInitialData()
   buttonGup.setCoord(33,25,34,20);
   buttonGup.setTitle("G +");
   buttonGup.setColor(GREEN); // Set button to green
+  buttonGup.setTextColor(WHITE);
   buttonGup.setInputMode(NO_ACK); // You need this line to allow for multiple button presses
 
   buttonGdown.setId(4); // Button to decrease green level
@@ -98,6 +96,7 @@ void setInitialData()
   buttonGdown.setCoord(33,50,34,20);
   buttonGdown.setTitle("G -");
   buttonGdown.setColor(GREEN); // Set button to green
+  buttonGdown.setTextColor(WHITE);
   buttonGdown.setInputMode(NO_ACK); // You need this line to allow for multiple button presses
 
   buttonBup.setId(5); // Button to increase blue level
@@ -105,6 +104,7 @@ void setInitialData()
   buttonBup.setCoord(67,25,33,20);
   buttonBup.setTitle("B +");
   buttonBup.setColor(BLUE); // Set button to blue
+  buttonBup.setTextColor(WHITE);
   buttonBup.setInputMode(NO_ACK); // You need this line to allow for multiple button presses
 
   buttonBdown.setId(6); // Button to decrease blue level
@@ -112,12 +112,14 @@ void setInitialData()
   buttonBdown.setCoord(67,50,33,20);
   buttonBdown.setTitle("B -");
   buttonBdown.setColor(BLUE);  // Set button to blue 
+  buttonBdown.setTextColor(WHITE);
   buttonBdown.setInputMode(NO_ACK); // You need this line to allow for multiple button presses
 }
 
 // Arduino will run instructions here repeatedly until you power it off.
 void loop()
 {   
+  Andee101.poll();//required in every Andee101 sketch
   if(Andee101.isConnected() == true)
   {
     Serial.println("start loop");
