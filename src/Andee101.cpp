@@ -3,11 +3,11 @@
 // Author: Muhammad Hasif
 
 #include <CurieBle.h>
+#include <CurieTime.h>
 #include <Andee101.h>
-#include <TimeLib.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','.','0'};
+char Andee101Version[5] = {'1','.','2','.','1'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -159,8 +159,7 @@ void blePeripheralConnectHandler(BLECentral& central) {
   // central connected event handler
     
   AndeeConnected = true;
-  versionAndClear = false;
-    
+  versionAndClear = false;    
 }
 
 void blePeripheralDisconnectHandler(BLECentral& central) {
@@ -215,7 +214,7 @@ void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
 	}
   }
 	
-	printHEX(readBuffer);	
+	//printHEX(readBuffer);	
 	 
 	
   
@@ -1318,20 +1317,24 @@ void Andee101Helper::setSliderInitialValue(double value,char decPlace)
 	flashBuffer = '1';
 }
 
-void Andee101Helper::setSliderNumIntervals(char numInterval)
-{
-	if(numInterval < 223)
+void Andee101Helper::setSliderNumIntervals(int numInterval)
+{	
+	if(numInterval <= 223 && numInterval >= 0)
 	{
 		subBuffer = numInterval + 32;
 	}
-	else
+	else if(numInterval > 223)
 	{
-		subBuffer = numInterval;
+		subBuffer = 255;
+	}
+	else if (numInterval <= 0)
+	{
+		subBuffer = 0;
 	}
 }
 
 void Andee101Helper::getSliderValue(int* x)
-{	
+{
 	char buffer[20];
 	unsigned int i = 0;
 	memset(buffer,0x00,20);
@@ -1351,8 +1354,8 @@ void Andee101Helper::getSliderValue(int* x)
 	else
 	{
 		*x = atoi(buffer);
-	}
-	
+	}	
+	setSliderInitialValue(*x);	
 }
 
 void Andee101Helper::getSliderValue(float* f)
@@ -1375,6 +1378,7 @@ void Andee101Helper::getSliderValue(float* f)
 	{
 		*f = atof(buffer);
 	}	
+	setSliderInitialValue(*f);
 }
 
 void Andee101Helper::getSliderValue(double* d)
@@ -1397,6 +1401,7 @@ void Andee101Helper::getSliderValue(double* d)
 	{
 		*d = strtod(buffer,NULL);
 	}	
+	setSliderInitialValue(*d);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
