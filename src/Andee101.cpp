@@ -913,6 +913,124 @@ void Andee101Helper::setType(char type)
 		
 	}
 }
+
+void Andee101Helper::setLocation(char row, char order, char span){	
+	unsigned int x = 0;
+	unsigned int y = 0;
+	unsigned int w = 0;
+	unsigned int h = 20;	
+	
+	if(row == 0)
+	{
+		y = 4;
+	}
+	else if(row == 1)
+	{
+		y = 28;
+	}
+	else if(row == 2)
+	{
+		y = 52;
+	}
+	else if(row == 3)
+	{
+		y = 76;
+	}
+	
+	switch(span){
+		case ONE_THIRD:
+			if(order == 0)
+			{
+				x = 4;
+				w = 30;
+			}
+			else if(order == 1)
+			{
+				x = 35;
+				w = 30;
+			}
+			else if(order == 2)
+			{
+				x = 66;
+				w = 30;
+			}
+			break;
+		case TWO_THIRD:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 35;
+			}
+			else if(order == 2)
+			{
+				x = 66;
+			}
+			w = 61;
+			break;
+		case FULL:
+			x = 4;
+			w = 92;
+			break;
+		case ONE_QUART:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 28;
+			}
+			else if(order == 2)
+			{
+				x = 52;
+			}
+			else if(order == 3)
+			{
+				x = 76;
+			}
+			w = 20;
+			break;
+		case THREE_QUART:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 28;
+			}
+			else if(order == 2)
+			{
+				x = 52;
+			}
+			w = 68;
+			break;
+		case HALF:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 52;
+			}
+			w =44;
+			break;	
+		default:
+			//Serial.println("Andee UI Span ERROR");
+			break;
+	}
+	
+	memset(xywhBuffer,0x00,5);
+	xywhBuffer[0] = x+32;
+	xywhBuffer[1] = y+32;
+	xywhBuffer[2] = w+32;
+	xywhBuffer[3] = h+32;
+}
+
 void Andee101Helper::setCoord(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 	if(x > C_HLIMIT)

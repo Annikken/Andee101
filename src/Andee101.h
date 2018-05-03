@@ -265,7 +265,7 @@ extern Andee101Class Andee101;
 	KEYBOARD_IN, DATE_IN, TIME_IN, 
 	SLIDER_IN, TEXTBOX, TTS, JOYSTICK	
 	*/
-	
+	void setLocation(char, char, char);
 	void setCoord(unsigned int, unsigned int, unsigned int, unsigned int);//(x,y,w,h) respectively
 	//This function sets the position and size of the widget. x and y are the x coordinates and y corrdinates respectively. w and h is the width and height of the widget respectively. 
 	
@@ -457,6 +457,16 @@ const char REMOVE = 'E';//
 #define ACK '0'
 #define NOACK NO_ACK
 #define NO_ACK '1'
+
+/*************************************************************
+ **************      LOCATION MACROS      ********************
+ ************************************************************/ 
+#define ONE_THIRD 1
+#define TWO_THIRD 2
+#define FULL 3
+#define ONE_QUART 4
+#define HALF 5
+#define THREE_QUART 6
 
 ///////////Keyboard Definitions////////////////
 
