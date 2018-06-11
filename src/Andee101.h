@@ -4,7 +4,6 @@
 
 //The Annikken Andee101 is an app to enable users to create their own dynamic dashboard on their smartphones and tablets without any Objective C, Swift or Java programming. All they need is the Annikken Andee101 App, an Arduino 101 and this library. All functions will be well documented. For any questions regarding the Annikken Andee101 or even the Annikken Andee, feel free to email us at andee@annikken.com.
 
-extern BLEPeripheral Andee101Peripheral;
 extern BLEService Andee101Service;
 extern BLECharacteristic Andee101Write;
 extern BLECharacteristic Andee101Read;
@@ -37,11 +36,11 @@ void systemTime(void);
 //This function will send a 'T' to the smartphone. This will trigger the app to send back the system time expressed in milliseconds since the Epoch.
 //The bytes sent are ASTART,'T',AEND
 
-void blePeripheralConnectHandler(BLECentral& central);
+void blePeripheralConnectHandler(BLEDevice);
 
-void blePeripheralDisconnectHandler(BLECentral& central);
+void blePeripheralDisconnectHandler(BLEDevice);
 
-void readBLEBuffer(BLECentral&,BLECharacteristic&);
+void readBLEBuffer(BLEDevice,BLECharacteristic);
 //This function deals with replies from the smartphone or tablet. 
 //The data being sent from the smartphone to the Arduino 101 will be similar to the data sent from the Arduin0 101 to the smartphone. The data will be broken into 18 byte packets and sent to the Arduino 101. 
 //This function contains a logic to piece the packets together to form the data. This part should not be changed, unless there are more efficient ways to carry out the data combination. Once the data has been pieced together, the data can now be parsed.
