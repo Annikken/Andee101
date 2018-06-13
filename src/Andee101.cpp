@@ -124,8 +124,9 @@ void sendToPhone( char*UI )
 		{
 		  memset(partialUI,0x00,18);
 		  memcpy(partialUI, UI + i, 18);
-		  //Serial.print("sendBT:");printHEX(partialUI);
-		  Andee101Write.setValue((const unsigned char*)partialUI,18);
+		  //Serial.print("sendBT:");printHEX(partialUI);		  
+		  Andee101Write.setValue((const char*)partialUI);
+		  delay(5);
 		  
 		  i = i + 18;		
 			
@@ -134,7 +135,7 @@ void sendToPhone( char*UI )
 	  else
 	  {
 		  //Serial.print("sendBT:");printHEX(partialUI);
-		  Andee101Write.setValue((const unsigned char*)UI,msgLen);
+		  Andee101Write.setValue((const char*)UI);
 	  }  
   }
   else
@@ -488,7 +489,6 @@ void Andee101Class::begin()
 		BLE.setLocalName("Andee101");
 	}
 	BLE.begin();
-	
 	BLE.setAppearance(384);
 	BLE.setAdvertisedService(Andee101Service);
 	
@@ -1633,7 +1633,7 @@ void Andee101Helper::update(void)
 	
 	//printHEX(bleBuffer);
 	sendToPhone(bleBuffer);
-	delay(5);
+	delay(15);
 }
 
 
