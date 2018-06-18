@@ -7,7 +7,7 @@
 #include <Andee101.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','.','1'};
+char Andee101Version[5] = {'1','.','2','.','2'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -31,10 +31,9 @@ bool AndeeAlive = false;
 
 bool dataLog = false;
 
-BLEPeripheral Andee101Peripheral;
 BLEService Andee101Service("516e7d03-c4ea-4103-9bd2-c560221a0c16");
-BLECharacteristic Andee101Write ("516e7d04-c4ea-4103-9bd2-c560221a0c16", BLEWrite | BLENotify, 20);
-BLECharacteristic Andee101Read ("516e7d05-c4ea-4103-9bd2-c560221a0c16", BLEWrite | BLENotify, 20); 
+BLECharacteristic Andee101Write ("516e7d04-c4ea-4103-9bd2-c560221a0c16", BLEWrite|BLENotify, 20);
+BLECharacteristic Andee101Read ("516e7d05-c4ea-4103-9bd2-c560221a0c16", BLEWrite|BLENotify, 20); 
 															   
 Andee101Class Andee101;
 
@@ -125,17 +124,18 @@ void sendToPhone( char*UI )
 		{
 		  memset(partialUI,0x00,18);
 		  memcpy(partialUI, UI + i, 18);
-		  
-		  Andee101Write.setValue((const unsigned char*)partialUI,18);
+		  //Serial.print("sendBT:");printHEX(partialUI);		  
+		  Andee101Write.setValue((const char*)partialUI);
+		  delay(5);
 		  
 		  i = i + 18;		
 			
 		}
 	  }
 	  else
-	  {		
-		Andee101Write.setValue((const unsigned char*)UI,msgLen);
-			 
+	  {
+		  //Serial.print("sendBT:");printHEX(partialUI);
+		  Andee101Write.setValue((const char*)UI);
 	  }  
   }
   else
@@ -155,22 +155,22 @@ void systemTime(void)
 	memset(msgToPhone,0x00,18);
 }
 
-void blePeripheralConnectHandler(BLECentral& central) {
+void blePeripheralConnectHandler(BLEDevice central) {
   // central connected event handler
-    
+  Serial.println("");Serial.print("Andee101 Connected\r\n");
   AndeeConnected = true;
   versionAndClear = false;    
 }
 
-void blePeripheralDisconnectHandler(BLECentral& central) {
+void blePeripheralDisconnectHandler(BLEDevice central) {
   // central disconnected event handler
-    
+  Serial.println("");Serial.print("Andee101 disconnected\r\n");    
   AndeeConnected = false;
   resetBLEFlag = false;
     
 }
 
-void readBLEBuffer(BLECentral& central, BLECharacteristic& characteristic)
+void readBLEBuffer(BLEDevice central, BLECharacteristic characteristic)
 {  
   unsigned int mLen;
   unsigned int rLen;
@@ -462,12 +462,7 @@ bool Andee101Class::isConnected()
 	return AndeeConnected; */
 	
 	
-	return Andee101Peripheral.connected();    
-}
-
-void Andee101Class::broadcast()
-{
-	BLECentral central = Andee101Peripheral.central();
+	return AndeeConnected;    
 }
 
 void Andee101Class::resetBLE()
@@ -490,20 +485,24 @@ void Andee101Class::begin()
 	
 	if (nameFlag == 0)
 	{
-		Andee101Peripheral.setLocalName("Andee101");
-		Andee101Peripheral.setDeviceName("Andee101");
+		BLE.setDeviceName("Andee101");
+		BLE.setLocalName("Andee101");
 	}
-	Andee101Peripheral.setAppearance(384);
-	Andee101Peripheral.setAdvertisedServiceUuid(Andee101Service.uuid());
-	Andee101Peripheral.addAttribute(Andee101Service);
-	Andee101Peripheral.addAttribute(Andee101Read);
-	Andee101Peripheral.addAttribute(Andee101Write);
-	Andee101Read.setEventHandler(BLEWritten, readBLEBuffer);
-	Andee101Peripheral.setEventHandler(BLEConnected, blePeripheralConnectHandler);
-	Andee101Peripheral.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
-	Andee101Peripheral.begin();
-	delay(5);
-	Andee101.broadcast();
+	BLE.begin();
+	BLE.setAppearance(384);
+	BLE.setAdvertisedService(Andee101Service);
+	
+	Andee101Service.addCharacteristic(Andee101Read);
+	Andee101Service.addCharacteristic(Andee101Write);
+	
+	BLE.addService(Andee101Service);
+	
+	BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
+	BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
+	Andee101Read.setEventHandler(BLEWritten, readBLEBuffer);	
+	
+	
+	BLE.advertise();
 	
 	memset(buttonBuffer,0x00,50);
 	memset(phoneBuffer,0x00,64);
@@ -516,15 +515,15 @@ void Andee101Class::begin()
 
 void Andee101Class::poll()
 {
-	Andee101Peripheral.poll();
+	BLE.poll();
 	
 	processReply();
 }
 
 void Andee101Class::setName(const char* name)
 {
-	Andee101Peripheral.setLocalName(name);
-	Andee101Peripheral.setDeviceName(name);
+	BLE.setDeviceName(name);
+	BLE.setLocalName(name);
 	nameFlag = 1;
 	delay(5);
 }
@@ -913,6 +912,124 @@ void Andee101Helper::setType(char type)
 		
 	}
 }
+
+void Andee101Helper::setLocation(char row, char order, char span){	
+	unsigned int x = 0;
+	unsigned int y = 0;
+	unsigned int w = 0;
+	unsigned int h = 20;	
+	
+	if(row == 0)
+	{
+		y = 4;
+	}
+	else if(row == 1)
+	{
+		y = 28;
+	}
+	else if(row == 2)
+	{
+		y = 52;
+	}
+	else if(row == 3)
+	{
+		y = 76;
+	}
+	
+	switch(span){
+		case ONE_THIRD:
+			if(order == 0)
+			{
+				x = 4;
+				w = 30;
+			}
+			else if(order == 1)
+			{
+				x = 35;
+				w = 30;
+			}
+			else if(order == 2)
+			{
+				x = 66;
+				w = 30;
+			}
+			break;
+		case TWO_THIRD:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 35;
+			}
+			else if(order == 2)
+			{
+				x = 66;
+			}
+			w = 61;
+			break;
+		case FULL:
+			x = 4;
+			w = 92;
+			break;
+		case ONE_QUART:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 28;
+			}
+			else if(order == 2)
+			{
+				x = 52;
+			}
+			else if(order == 3)
+			{
+				x = 76;
+			}
+			w = 20;
+			break;
+		case THREE_QUART:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 28;
+			}
+			else if(order == 2)
+			{
+				x = 52;
+			}
+			w = 68;
+			break;
+		case HALF:
+			if(order == 0)
+			{
+				x = 4;
+			}
+			else if(order == 1)
+			{
+				x = 52;
+			}
+			w =44;
+			break;	
+		default:
+			//Serial.println("Andee UI Span ERROR");
+			break;
+	}
+	
+	memset(xywhBuffer,0x00,5);
+	xywhBuffer[0] = x+32;
+	xywhBuffer[1] = y+32;
+	xywhBuffer[2] = w+32;
+	xywhBuffer[3] = h+32;
+}
+
 void Andee101Helper::setCoord(unsigned int x, unsigned int y, unsigned int w, unsigned int h)
 {
 	if(x > C_HLIMIT)
@@ -1516,7 +1633,7 @@ void Andee101Helper::update(void)
 	
 	//printHEX(bleBuffer);
 	sendToPhone(bleBuffer);
-	delay(5);
+	delay(15);
 }
 
 
