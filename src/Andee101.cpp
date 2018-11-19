@@ -7,7 +7,7 @@
 #include <Andee101.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','.','2'};
+char Andee101Version[5] = {'1','.','2','.','3'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -1529,8 +1529,8 @@ void Andee101Helper::getSliderValue(double* d)
 
 void Andee101Helper::getJoystick(int* x,int* y)
 {
-	char bufferX[4];
-	char bufferY[4];
+	char bufferX[5];
+	char bufferY[5];
 	
 	for(int i = 0;i<3;i++)
 	{
@@ -1623,7 +1623,7 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == JOYSTICK)
 	{
-		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%s%c%s%c", START_TAG_UIXYWH,JOYSTICK, id,xywhBuffer,inputTypeBuffer,SEPARATOR,	titleBGBuffer,titleFontBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
+		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c", START_TAG_UIXYWH,JOYSTICK, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,SEPARATOR, unitBuffer,SEPARATOR,dataBuffer,END_TAG_UIXYWH);
 	}
 	
 	else if(bleBuffer[1] == WATCH)

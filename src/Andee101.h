@@ -492,6 +492,11 @@ const char REMOVE = 'E';//
 #define OFF '0'
 #define MAXSLIDER 10
 
+/////////////////////Joystick Macros//////////////////////
+
+#define setXAxisMax setUnit
+#define setYAxisMax setData
+
 /////////////////////////Text to Speech Macros//////////////////////
 
 #define US '0'
