@@ -7,7 +7,7 @@
 #include <Andee101.h>
 #include <stdlib.h>
 
-char Andee101Version[5] = {'1','.','2','.','2'};
+char Andee101Version[5] = {'1','.','2','.','3'};
 
 int nameFlag = 0;
 int buttonNumber = 24;
@@ -348,8 +348,8 @@ void processReply()
 	else if(readBuffer[0] == JOYSTICK)
 	{
 		memset(phoneBuffer,0x00,64);
-		memcpy(phoneBuffer,readBuffer,10);
-		phoneBuffer[9] = '\0';
+		memcpy(phoneBuffer,readBuffer,12);
+		phoneBuffer[13] = '\0';
 		memset(readBuffer,0x00,128);		
 	}
 	else if(readBuffer[0] == GYRO)
@@ -1529,23 +1529,23 @@ void Andee101Helper::getSliderValue(double* d)
 
 void Andee101Helper::getJoystick(int* x,int* y)
 {
-	char bufferX[4];
-	char bufferY[4];
+	char bufferX[5];
+	char bufferY[5];
 	
-	for(int i = 0;i<3;i++)
+	for(int i = 0;i<4;i++)
 	{
-		bufferX[i] = phoneBuffer[i+3];
+		bufferX[i] = phoneBuffer[i+4];
 	}
-	bufferX[3] = '\0';
+	bufferX[4] = '\0';
 	
-	for(int j = 0;j<3;j++)
+	for(int j = 0;j<4;j++)
 	{
-		bufferY[j] = phoneBuffer[j+6];
+		bufferY[j] = phoneBuffer[j+8];
 	}
-	bufferY[3] = '\0';
+	bufferY[4] = '\0';
 	 
 	
-	if(id == phoneBuffer[1])
+	if(id == phoneBuffer[2])
 	{
 		*x = atoi(bufferX); //- (int)100;
 		*y = atoi(bufferY); //- (int)100;		
@@ -1623,7 +1623,7 @@ void Andee101Helper::update(void)
 	
 	else if(bleBuffer[1] == JOYSTICK)
 	{
-		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%s%c%s%c", START_TAG_UIXYWH,JOYSTICK, id,xywhBuffer,inputTypeBuffer,SEPARATOR,	titleBGBuffer,titleFontBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,END_TAG_UIXYWH);
+		sprintf(bleBuffer,"%c%c%c%s%c%c%s%s%c%s%c%s%c%s%c", START_TAG_UIXYWH,JOYSTICK, id,xywhBuffer,inputTypeBuffer,SEPARATOR,titleBGBuffer,bodyBGBuffer,SEPARATOR,titleBuffer,SEPARATOR, unitBuffer,SEPARATOR,dataBuffer,END_TAG_UIXYWH);
 	}
 	
 	else if(bleBuffer[1] == WATCH)
