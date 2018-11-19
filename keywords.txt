@@ -127,6 +127,10 @@ setActiveColor	KEYWORD2
 
 setBaseColor	KEYWORD2
 
+setYAxisMax	KEYWORD2
+
+setXAxisMax	KEYWORD2
+
 
 
 
