@@ -39,21 +39,21 @@ void setInitialData()
 { 
   
   // The First Data_Out Widget
-  objectA.setId(0);           // Each object must have a unique ID number
-  objectA.setType(DATA_OUT_HEADER);  // This defines your object as a display box
-  objectA.setCoord(0, 0, 100, 20);
-  objectA.setTitle("Joystick Example");
-  objectA.setTextColor(WHITE);
-  objectA.setColor(DARK_BLUE);
+  titleDisplay.setId(0);           // Each object must have a unique ID number
+  titleDisplay.setType(DATA_OUT_HEADER);  // This defines your object as a display box
+  titleDisplay.setCoord(0, 0, 100, 20);
+  titleDisplay.setTitle("Joystick Example");
+  titleDisplay.setTextColor(WHITE);
+  titleDisplay.setColor(DARK_BLUE);
 
   // A joystick widget
-  objectB.setId(1);            
-  objectB.setType(JOYSTICK);  //This defines your object as a joystick widget
-  objectB.setCoord(25, 30, 50, 50);
-  objectB.setYAxisMax(100);
-  objectB.setXAxisMax(100);
-  objectB.setActiveColor(GREEN);// set the color of the "thumbstick"
-  objectB.setBaseColor(RED);// set the color of the joystick base
+  joystick.setId(1);            
+  joystick.setType(JOYSTICK);  //This defines your object as a joystick widget
+  joystick.setCoord(25, 30, 50, 50);
+  joystick.setYAxisMax(100);
+  joystick.setXAxisMax(100);
+  joystick.setActiveColor(GREEN);// set the color of the "thumbstick"
+  joystick.setBaseColor(RED);// set the color of the joystick base
 }
 
 // Arduino will run instructions here repeatedly until you power it off.
@@ -62,13 +62,13 @@ void loop()
   Andee101.poll();//required in every Andee101 sketch
   if (Andee101.isConnected() == true)
   {
-    objectB.getJoystick(&xAxis,&yAxis);// this function stores the value of the joystick 
+    joystick.getJoystick(&xAxis,&yAxis);// this function stores the value of the joystick 
 
     Serial.print("xAxis:");Serial.println(xAxis);
     Serial.print("yAxis:");Serial.println(yAxis);
     
-    objectA.update();
-    objectB.update();
+    titleDisplay.update();
+    joystick.update();
     delay(100);//delay is needed or else Arduino 101 will be crash
   }
 }
